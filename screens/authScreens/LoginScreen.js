@@ -1,6 +1,45 @@
-import {Button, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
+import {Alert, Button, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
+import {useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
+import {authenticate, register} from "../../utilities/auth";
+import {resetState, setEmail, setPassword} from "../../store/authStates/auth";
 
-function LoginScreen() {
+function LoginScreen({ navigation }) {
+    const [inputEmail, setInputEmail] = useState('');
+    const [inputPassword, setInputPassword] = useState('');
+
+    const emailValid = useSelector((state) => state.validRegisterForm.validEmail);
+    const passwordValid = useSelector((state) => state.validRegisterForm.validPassword);
+
+    const dispatch = useDispatch();
+    async function loginHandler() {
+        console.log(inputEmail)
+        console.log(inputPassword)
+        try {
+            await authenticate(inputEmail, inputPassword);
+            dispatch((resetState({})))
+            navigation.replace('HomeScreen');
+        } catch (exception) {
+            dispatch((resetState({})))
+            switch (exception.code) {
+                case 'auth/invalid-email':
+                    dispatch((setEmail({ email: false })));
+                    break;
+                case 'auth/user-not-found':
+                    dispatch((setEmail({ email: false })));
+                    dispatch((setPassword({ password: false })));
+                    break;
+                case 'auth/wrong-password':
+                    dispatch((setEmail({ email: false })));
+                    dispatch((setPassword({ password: false })));
+                    break;
+                default:
+                    Alert.alert('Unknown Error', 'Please try again later!');
+            }
+            console.log(exception.code)
+        }
+    }
+
     return (
         <>
             <View style={styles.titleContainer}>
@@ -9,11 +48,23 @@ function LoginScreen() {
             </View>
             <View style={styles.inputFieldContainers}>
                 <View style={styles.inputContainer}>
-                    <TextInput placeholder={'Email'} placeholderTextColor={'#747373'} style={styles.input}/>
+                    <TextInput placeholder={'Email'}
+                               placeholderTextColor={'#747373'}
+                               style={[styles.input, !emailValid && styles.error]}
+                               value={inputEmail}
+                               autoCapitalize={'none'}
+                               onChangeText={(enteredValue) => {setInputEmail(enteredValue)}}/>
+                    { !emailValid && passwordValid && <Text style={styles.textError}>Invalid email</Text> }
                 </View>
                 <View style={styles.inputContainer}>
-                    <TextInput placeholder={'Password'} placeholderTextColor={'#747373'} secureTextEntry={true}
-                               style={styles.input} />
+                    <TextInput placeholder={'Password'}
+                               placeholderTextColor={'#747373'}
+                               secureTextEntry={true}
+                               style={[styles.input, !passwordValid && styles.error]}
+                               value={inputPassword}
+                               autoCapitalize={'none'}
+                               onChangeText={(enteredValue) => {setInputPassword(enteredValue)}}/>
+                    { !emailValid && !passwordValid && <Text style={styles.textError}>Invalid email and/or password</Text> }
                 </View>
             </View>
             <View style={styles.forgotPasswordContainer}>
@@ -22,9 +73,11 @@ function LoginScreen() {
                 </Pressable>
             </View>
             <View style={styles.titleContainer}>
-                <Button title={'Login'} color={'#543864'}/>
+                <Button title={'Login'}
+                        color={'#543864'}
+                        onPress={loginHandler}/>
                 <Text style={styles.text}>Don't have an account?</Text>
-                <Pressable>
+                <Pressable onPress={() => navigation.push('RegisterScreen')}>
                     <Text style={styles.textButton}>Sign up</Text>
                 </Pressable>
             </View>
@@ -70,8 +123,8 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 6,
         fontSize: 16,
-        width: 250
-
+        width: 250,
+        color: 'white'
     },
     loginButton: {
         backgroundColor: '#543864'
@@ -81,5 +134,13 @@ const styles = StyleSheet.create({
     },
     textButton: {
         color: '#FF6464'
+    },
+    error: {
+        borderColor: 'red',
+        borderWidth: 2
+    },
+    textError: {
+        color: 'red',
+        padding: 4
     }
 });
