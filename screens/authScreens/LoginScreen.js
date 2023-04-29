@@ -3,6 +3,7 @@ import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {authenticate, register} from "../../utilities/auth";
 import {resetState, setEmail, setPassword} from "../../store/authStates/auth";
+import {colors} from "../../constants/colors";
 
 function LoginScreen({ navigation }) {
     const [inputEmail, setInputEmail] = useState('');
@@ -49,7 +50,7 @@ function LoginScreen({ navigation }) {
             <View style={styles.inputFieldContainers}>
                 <View style={styles.inputContainer}>
                     <TextInput placeholder={'Email'}
-                               placeholderTextColor={'#747373'}
+                               placeholderTextColor={colors.placeholderDefault}
                                style={[styles.input, !emailValid && styles.error]}
                                value={inputEmail}
                                autoCapitalize={'none'}
@@ -58,7 +59,7 @@ function LoginScreen({ navigation }) {
                 </View>
                 <View style={styles.inputContainer}>
                     <TextInput placeholder={'Password'}
-                               placeholderTextColor={'#747373'}
+                               placeholderTextColor={colors.placeholderDefault}
                                secureTextEntry={true}
                                style={[styles.input, !passwordValid && styles.error]}
                                value={inputPassword}
@@ -92,17 +93,17 @@ export default LoginScreen;
 const styles = StyleSheet.create({
     titleContainer: {
         flex: 2,
-        backgroundColor: '#01024E',
+        backgroundColor: colors.primary700,
         alignItems: 'center',
         justifyContent: 'center',
     },
     inputFieldContainers: {
-        backgroundColor: '#01024E',
+        backgroundColor: colors.primary700,
         alignItems: 'center',
         justifyContent: 'center',
     },
     forgotPasswordContainer: {
-        backgroundColor: '#01024E',
+        backgroundColor: colors.primary700,
         alignItems: 'flex-end',
         justifyContent: 'center',
         paddingRight: 80
@@ -118,29 +119,26 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
     },
     input: {
-        backgroundColor: '#313380',
+        backgroundColor: colors.primary400,
         borderRadius: 8,
         paddingVertical: 8,
         paddingHorizontal: 6,
         fontSize: 16,
         width: 250,
-        color: 'white'
-    },
-    loginButton: {
-        backgroundColor: '#543864'
+        color: colors.whiteDefault
     },
     text: {
-        color: 'white'
+        color: colors.whiteDefault
     },
     textButton: {
-        color: '#FF6464'
+        color: colors.secondary500
     },
     error: {
-        borderColor: 'red',
+        borderColor: colors.redDefault,
         borderWidth: 2
     },
     textError: {
-        color: 'red',
+        color: colors.redDefault,
         padding: 4
     }
 });

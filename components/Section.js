@@ -1,4 +1,5 @@
 import {Pressable, StyleSheet, Text, View} from "react-native";
+import {colors} from "../constants/colors";
 
 function Section({ children }) {
     return (
@@ -24,6 +25,6 @@ const styles = StyleSheet.create({
         fontSize: 14
     },
     buttonText: {
-        color: '#FF6464'
+        color: colors.secondary500
     }
 });

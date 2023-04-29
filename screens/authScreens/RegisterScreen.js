@@ -3,6 +3,7 @@ import {useState} from "react";
 import {register} from "../../utilities/auth";
 import {useDispatch, useSelector} from "react-redux";
 import {setEmail, setPassword, resetState} from "../../store/authStates/auth";
+import {colors} from "../../constants/colors";
 
 function RegisterScreen({navigation}) {
     const [inputEmail, setInputEmail] = useState('');
@@ -69,7 +70,7 @@ function RegisterScreen({navigation}) {
             <View style={styles.inputFieldContainers}>
                 <View style={styles.inputContainer}>
                     <TextInput placeholder={'Email'}
-                               placeholderTextColor={'#747373'}
+                               placeholderTextColor={colors.placeholderDefault}
                                style={[styles.input, !emailValid && styles.error]}
                                value={inputEmail}
                                onChangeText={updateInputValueHandler.bind(this, 'email')}
@@ -78,7 +79,7 @@ function RegisterScreen({navigation}) {
                 </View>
                 <View style={styles.inputContainer}>
                     <TextInput placeholder={'Password'}
-                               placeholderTextColor={'#747373'}
+                               placeholderTextColor={colors.placeholderDefault}
                                secureTextEntry={true}
                                style={[styles.input, !passwordValid && styles.error]}
                                value={inputPassword}
@@ -87,7 +88,7 @@ function RegisterScreen({navigation}) {
                 </View>
                 <View style={styles.inputContainer}>
                     <TextInput placeholder={'Repeat Password'}
-                               placeholderTextColor={'#747373'}
+                               placeholderTextColor={colors.placeholderDefault}
                                secureTextEntry={true}
                                style={[styles.input, !passwordValid && styles.error]}
                                value={inputRepeatPassword}
@@ -112,19 +113,19 @@ export default RegisterScreen;
 const styles = StyleSheet.create({
     titleContainer: {
         flex: 2,
-        backgroundColor: '#01024E',
+        backgroundColor: colors.primary700,
         alignItems: 'center',
         justifyContent: 'center',
     },
     inputFieldContainers: {
-        backgroundColor: '#01024E',
+        backgroundColor: colors.primary700,
         alignItems: 'center',
         justifyContent: 'center',
     },
     appTitle: {
         fontSize: 34,
         fontWeight: 'bold',
-        color: 'white',
+        color: colors.whiteDefault,
         paddingBottom: 10
     },
     inputContainer: {
@@ -132,30 +133,27 @@ const styles = StyleSheet.create({
         paddingHorizontal: 8,
     },
     input: {
-        backgroundColor: '#313380',
+        backgroundColor: colors.primary400,
         borderRadius: 8,
         paddingVertical: 8,
         paddingHorizontal: 6,
         fontSize: 16,
         width: 250,
-        color: 'white'
+        color: colors.whiteDefault
 
     },
-    loginButton: {
-        backgroundColor: '#543864'
-    },
     text: {
-        color: 'white'
+        color: colors.whiteDefault
     },
     textButton: {
-        color: '#FF6464'
+        color: colors.secondary500
     },
     error: {
-        borderColor: 'red',
+        borderColor: colors.redDefault,
         borderWidth: 2
     },
     textError: {
-        color: 'red',
+        color: colors.redDefault,
         padding: 4
     }
 });

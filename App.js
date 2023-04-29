@@ -10,6 +10,7 @@ import HomeScreen from "./screens/authScreens/HomeScreen";
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import {colors} from "./constants/colors";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -17,9 +18,9 @@ function DrawerNavigator() {
     return (
         <Drawer.Navigator screenOptions={{
             headerTitleAlign: 'center',
-            headerTintColor: '#FF6464',
+            headerTintColor: colors.secondary500,
             headerStyle: {
-                backgroundColor: '#313380'
+                backgroundColor: colors.primary400
             },
             headerTitleStyle: {
                 color: 'white',
@@ -54,7 +55,7 @@ function DrawerNavigator() {
                               width: 130,
                           }}
                           renderRightIcon={() => (
-                              <Ionicons name={'person'} color={'#FF6464'} size={30} style={{paddingRight: 16}}/>
+                              <Ionicons name={'person'} color={colors.secondary500} size={30} style={{paddingRight: 16}}/>
                           )}
                           selectedTextStyle={{
                               opacity: 0
@@ -154,7 +155,7 @@ export default function App() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: colors.whiteDefault,
         alignItems: 'center',
         justifyContent: 'center',
     },
