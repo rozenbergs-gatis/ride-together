@@ -6,11 +6,12 @@ import {NavigationContainer} from "@react-navigation/native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {Provider} from "react-redux";
 import { store } from './store/store'
-import HomeScreen from "./screens/authScreens/HomeScreen";
+import HomeScreen from "./screens/HomeScreen";
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {colors} from "./constants/colors";
+import SkateparksScreen from "./screens/SkateparksScreen";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -72,7 +73,7 @@ function DrawerNavigator() {
                            }}
             />
             <Drawer.Screen name={'Skateparks'}
-                           component={HomeScreen}
+                           component={SkateparksScreen}
                            options={{
                                title: 'Skateparks',
                                // drawerIcon: ({color, size}) => <Ionicons name={'list'} color={color} size={size}/>
