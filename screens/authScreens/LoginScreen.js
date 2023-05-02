@@ -19,11 +19,6 @@ function LoginScreen({ navigation }) {
         console.log(inputPassword)
         authenticate(inputEmail, inputPassword)
             .then((userCredential) => {
-                // Signed in
-                // const user = userCredential.user;
-                // console.log(userCredential)
-                // console.log(userCredential._tokenResponse.idToken)
-                // console.log(typeof userCredential)
                 dispatch((resetState({})))
                 dispatch((setAuthToken({ token: userCredential._tokenResponse.idToken })));
             })
@@ -46,29 +41,6 @@ function LoginScreen({ navigation }) {
                 }
                 console.log(exception.code)
             });
-        // try {
-        //     dispatch((resetState({})))
-        //     dispatch((setAuthToken({ token: firebaseToken })));
-        //     // navigation.replace('HomeScreen', { screen: 'DrawerNavigator' });
-        // } catch (exception) {
-        //     dispatch((resetState({})))
-        //     switch (exception.code) {
-        //         case 'auth/invalid-email':
-        //             dispatch((setEmail({ email: false })));
-        //             break;
-        //         case 'auth/user-not-found':
-        //             dispatch((setEmail({ email: false })));
-        //             dispatch((setPassword({ password: false })));
-        //             break;
-        //         case 'auth/wrong-password':
-        //             dispatch((setEmail({ email: false })));
-        //             dispatch((setPassword({ password: false })));
-        //             break;
-        //         default:
-        //             Alert.alert('Unknown Error', 'Please try again later!');
-        //     }
-        //     console.log(exception.code)
-        // }
     }
 
     return (
