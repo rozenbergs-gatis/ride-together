@@ -1,9 +1,7 @@
 import {Pressable, StyleSheet, Text, View} from "react-native";
 import Section from "../components/Section";
-import {getUser} from "../utilities/auth";
 
 function HomeScreen() {
-    console.log(getUser())
     return(
         <View style={styles.root}>
             <Section>Edits</Section>

@@ -13,7 +13,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import {colors} from "./constants/colors";
 import SkateparksScreen from "./screens/SkateparksScreen";
 import SkateparkDetailsScreen from "./screens/skateparkScreens/SkateparkDetailsScreen";
-import {getUser, logout} from "./utilities/auth";
+import {getCurrentUser, logout} from "./utilities/auth";
 import {useEffect, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {removeAuthToken, setAuthToken} from "./store/authStates/login";
@@ -53,8 +53,6 @@ function AuthStack() {
 }
 
 function AuthenticatedStack() {
-    // const authCtx = useContext(AuthContext);
-
     return (
         <Stack.Navigator
             screenOptions={{
@@ -99,7 +97,6 @@ function AuthenticatedStack() {
 
 function Navigation() {
     const userAuthenticated = useSelector((state) => state.userAuth.isAuthenticated);
-    console.log(userAuthenticated);
     return (
         <NavigationContainer>
             { !userAuthenticated && <AuthStack/> }
@@ -148,7 +145,7 @@ function DrawerNavigator() {
                 <Dropdown data={[
                     { label: 'My Profile', value: 1},
                     { label: 'Friends', value: 1},
-                    { label: 'Roadmap', value: 1},
+                    { label: 'Creators Space', value: 1},
                     { label: 'My Media', value: 1},
                     { label: 'Logout', value: 1},
                 ]}
@@ -157,7 +154,10 @@ function DrawerNavigator() {
                           onChange={async item => {
                               switch (item.label) {
                                   case 'My Profile':
-                                      console.log(getUser());
+                                      console.log(getCurrentUser());
+                                      break;
+                                  case 'Creators Space':
+                                      console.log(getCurrentUser());
                                       break;
                                   case 'Logout':
                                       await logout()
