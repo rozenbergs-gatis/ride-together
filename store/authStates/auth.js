@@ -15,7 +15,7 @@ const authSlice = createSlice({
             // state.ids.splice(state.ids.indexOf(action.payload.id), 1);
             state.validPassword = action.payload.password;
         },
-        resetState: (state, action) => {
+        resetState: (state, _action) => {
             state.validEmail = true
             state.validPassword = true
         }

@@ -1,10 +1,10 @@
 import {StatusBar} from 'expo-status-bar';
-import {Pressable, StyleSheet, Text, View} from 'react-native';
+import {AppRegistry, Pressable, StyleSheet, Text, View} from 'react-native';
 import LoginScreen from "./screens/authScreens/LoginScreen";
 import RegisterScreen from "./screens/authScreens/RegisterScreen";
-import {NavigationContainer} from "@react-navigation/native";
+import {NavigationContainer, useNavigation} from "@react-navigation/native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import {Provider} from "react-redux";
+import {Provider, useDispatch, useSelector} from "react-redux";
 import { store } from './store/store'
 import HomeScreen from "./screens/HomeScreen";
 import {createDrawerNavigator} from "@react-navigation/drawer";
@@ -13,10 +13,126 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import {colors} from "./constants/colors";
 import SkateparksScreen from "./screens/SkateparksScreen";
 import SkateparkDetailsScreen from "./screens/skateparkScreens/SkateparkDetailsScreen";
-
+import {getUser, logout} from "./utilities/auth";
+import {useEffect, useState} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import {removeAuthToken, setAuthToken} from "./store/authStates/login";
+import AppLoading from "expo-app-loading";
+AppRegistry.registerComponent('main',() => App);
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
+
+function AuthStack() {
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerTitleAlign: 'center',
+                headerTintColor: colors.secondary500,
+                headerStyle: {
+                    backgroundColor: colors.primary400
+                },
+                headerTitleStyle: {
+                    color: 'white',
+                    fontSize: 28
+                },
+                statusBarColor: colors.primary400,
+            }}
+        >
+            <Stack.Screen
+                name="LoginScreen"
+                component={LoginScreen}
+                options={{headerShown: false}}
+            />
+            <Stack.Screen
+                name="RegisterScreen"
+                component={RegisterScreen}
+                options={{headerShown: false}}
+            />
+        </Stack.Navigator>
+    );
+}
+
+function AuthenticatedStack() {
+    // const authCtx = useContext(AuthContext);
+
+    return (
+        <Stack.Navigator
+            screenOptions={{
+                headerTitleAlign: 'center',
+                headerTintColor: colors.secondary500,
+                headerStyle: {
+                    backgroundColor: colors.primary400
+                },
+                headerTitleStyle: {
+                    color: 'white',
+                    fontSize: 28
+                },
+                statusBarColor: colors.primary400,
+            }}
+        >
+            <Stack.Screen name={'Drawer'}
+                          component={DrawerNavigator}
+                          options={{
+                              headerShown: false
+                          }}
+            />
+            <Stack.Screen
+                name="HomeScreen"
+                component={HomeScreen}
+                options={{
+                    headerShown: true,
+                    headerTitle: 'Ride Together',
+                    headerTitleAlign: 'center'
+                }}
+            />
+            <Stack.Screen
+                name="SkateparkDetails"
+                component={SkateparkDetailsScreen}
+                options={{
+                    headerShown: true,
+                    headerTitle: 'Skatepark'
+                }}
+            />
+        </Stack.Navigator>
+    );
+}
+
+function Navigation() {
+    const userAuthenticated = useSelector((state) => state.userAuth.isAuthenticated);
+    console.log(userAuthenticated);
+    return (
+        <NavigationContainer>
+            { !userAuthenticated && <AuthStack/> }
+            { userAuthenticated && <AuthenticatedStack/> }
+        </NavigationContainer>
+
+    );
+}
+
+function Root() {
+    const [isTryingLogIn, setIsTryingLogIn] = useState(true);
+    const dispatch = useDispatch();
+    useEffect(() => {
+        async function fetchToken() {
+            const storedToken = await AsyncStorage.getItem('token');
+            if (storedToken) {
+                dispatch((setAuthToken({ token: storedToken })));
+            }
+            setIsTryingLogIn(false);
+        }
+        fetchToken();
+    }, []);
+
+    if(isTryingLogIn) {
+        return <AppLoading />;
+    }
+
+    return <Navigation />;
+}
+
 function DrawerNavigator() {
+    const navigation = useNavigation();
+    const dispatch = useDispatch();
     return (
         <Drawer.Navigator screenOptions={{
             headerTitleAlign: 'center',
@@ -38,8 +154,18 @@ function DrawerNavigator() {
                 ]}
                           labelField={"label"}
                           valueField={"value"}
-                          onChange={item => {
-                              console.log(item)
+                          onChange={async item => {
+                              switch (item.label) {
+                                  case 'My Profile':
+                                      console.log(getUser());
+                                      break;
+                                  case 'Logout':
+                                      await logout()
+                                      dispatch((removeAuthToken({})));
+                                      break;
+                                  default:
+                                      console.log(item)
+                              }
                           }}
                           style={{
                               width: 130
@@ -112,64 +238,7 @@ export default function App() {
         <>
             <StatusBar style={'light'}/>
             <Provider store={store}>
-                <NavigationContainer>
-                    <Stack.Navigator
-                        screenOptions={{
-                            headerTitleAlign: 'center',
-                            headerTintColor: colors.secondary500,
-                            headerStyle: {
-                                backgroundColor: colors.primary400
-                            },
-                            headerTitleStyle: {
-                                color: 'white',
-                                fontSize: 28
-                            },
-                        }}>
-                        <Stack.Screen name={'Drawer'}
-                                      component={DrawerNavigator}
-                                      options={{
-                                          headerShown: false
-                                      }}
-                        />
-                        <Stack.Screen
-                            name="LoginScreen"
-                            component={LoginScreen}
-                            options={{headerShown: false}}
-                        />
-                        <Stack.Screen
-                            name="RegisterScreen"
-                            component={RegisterScreen}
-                            options={{headerShown: false}}
-                        />
-                        <Stack.Screen
-                            name="HomeScreen"
-                            component={HomeScreen}
-                            options={{
-                                headerShown: true,
-                                headerTitle: 'Ride Together',
-                                headerTitleAlign: 'center'
-
-                        }}
-                        />
-                        <Stack.Screen
-                            name="SkateparkDetails"
-                            component={SkateparkDetailsScreen}
-                            options={{
-                                headerShown: true,
-                                headerTitle: 'Skatepark',
-                                headerTintColor: colors.secondary500,
-                                headerStyle: {
-                                    backgroundColor: colors.primary400
-                                },
-                                statusBarColor: colors.primary400,
-                                headerTitleAlign: 'center'
-
-                            }}
-                        />
-                    </Stack.Navigator>
-                    {/*<LoginScreen/>*/}
-                    {/*<RegisterScreen/>*/}
-                </NavigationContainer>
+                <Root/>
             </Provider>
         </>
     );

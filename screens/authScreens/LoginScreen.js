@@ -1,9 +1,10 @@
 import {Alert, Button, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {authenticate, register} from "../../utilities/auth";
+import {authenticate} from "../../utilities/auth";
 import {resetState, setEmail, setPassword} from "../../store/authStates/auth";
 import {colors} from "../../constants/colors";
+import {setAuthToken} from "../../store/authStates/login";
 
 function LoginScreen({ navigation }) {
     const [inputEmail, setInputEmail] = useState('');
@@ -16,29 +17,58 @@ function LoginScreen({ navigation }) {
     async function loginHandler() {
         console.log(inputEmail)
         console.log(inputPassword)
-        try {
-            await authenticate(inputEmail, inputPassword);
-            dispatch((resetState({})))
-            navigation.replace('HomeScreen');
-        } catch (exception) {
-            dispatch((resetState({})))
-            switch (exception.code) {
-                case 'auth/invalid-email':
-                    dispatch((setEmail({ email: false })));
-                    break;
-                case 'auth/user-not-found':
-                    dispatch((setEmail({ email: false })));
-                    dispatch((setPassword({ password: false })));
-                    break;
-                case 'auth/wrong-password':
-                    dispatch((setEmail({ email: false })));
-                    dispatch((setPassword({ password: false })));
-                    break;
-                default:
-                    Alert.alert('Unknown Error', 'Please try again later!');
-            }
-            console.log(exception.code)
-        }
+        authenticate(inputEmail, inputPassword)
+            .then((userCredential) => {
+                // Signed in
+                // const user = userCredential.user;
+                // console.log(userCredential)
+                // console.log(userCredential._tokenResponse.idToken)
+                // console.log(typeof userCredential)
+                dispatch((resetState({})))
+                dispatch((setAuthToken({ token: userCredential._tokenResponse.idToken })));
+            })
+            .catch((exception) => {
+                dispatch((resetState({})))
+                switch (exception.code) {
+                    case 'auth/invalid-email':
+                        dispatch((setEmail({ email: false })));
+                        break;
+                    case 'auth/user-not-found':
+                        dispatch((setEmail({ email: false })));
+                        dispatch((setPassword({ password: false })));
+                        break;
+                    case 'auth/wrong-password':
+                        dispatch((setEmail({ email: false })));
+                        dispatch((setPassword({ password: false })));
+                        break;
+                    default:
+                        Alert.alert('Unknown Error', 'Please try again later!');
+                }
+                console.log(exception.code)
+            });
+        // try {
+        //     dispatch((resetState({})))
+        //     dispatch((setAuthToken({ token: firebaseToken })));
+        //     // navigation.replace('HomeScreen', { screen: 'DrawerNavigator' });
+        // } catch (exception) {
+        //     dispatch((resetState({})))
+        //     switch (exception.code) {
+        //         case 'auth/invalid-email':
+        //             dispatch((setEmail({ email: false })));
+        //             break;
+        //         case 'auth/user-not-found':
+        //             dispatch((setEmail({ email: false })));
+        //             dispatch((setPassword({ password: false })));
+        //             break;
+        //         case 'auth/wrong-password':
+        //             dispatch((setEmail({ email: false })));
+        //             dispatch((setPassword({ password: false })));
+        //             break;
+        //         default:
+        //             Alert.alert('Unknown Error', 'Please try again later!');
+        //     }
+        //     console.log(exception.code)
+        // }
     }
 
     return (
