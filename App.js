@@ -12,6 +12,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {colors} from "./constants/colors";
 import SkateparksScreen from "./screens/SkateparksScreen";
+import SkateparkDetailsScreen from "./screens/skateparkScreens/SkateparkDetailsScreen";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -114,8 +115,15 @@ export default function App() {
                 <NavigationContainer>
                     <Stack.Navigator
                         screenOptions={{
-                            // headerStyle: {backgroundColor: GlobalStyles.colors.primary500},
-                            headerTintColor: 'white',
+                            headerTitleAlign: 'center',
+                            headerTintColor: colors.secondary500,
+                            headerStyle: {
+                                backgroundColor: colors.primary400
+                            },
+                            headerTitleStyle: {
+                                color: 'white',
+                                fontSize: 28
+                            },
                         }}>
                         <Stack.Screen name={'Drawer'}
                                       component={DrawerNavigator}
@@ -139,10 +147,24 @@ export default function App() {
                             options={{
                                 headerShown: true,
                                 headerTitle: 'Ride Together',
-                                headerTintColor: 'blue',
                                 headerTitleAlign: 'center'
 
                         }}
+                        />
+                        <Stack.Screen
+                            name="SkateparkDetails"
+                            component={SkateparkDetailsScreen}
+                            options={{
+                                headerShown: true,
+                                headerTitle: 'Skatepark',
+                                headerTintColor: colors.secondary500,
+                                headerStyle: {
+                                    backgroundColor: colors.primary400
+                                },
+                                statusBarColor: colors.primary400,
+                                headerTitleAlign: 'center'
+
+                            }}
                         />
                     </Stack.Navigator>
                     {/*<LoginScreen/>*/}
