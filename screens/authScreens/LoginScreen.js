@@ -19,7 +19,7 @@ function LoginScreen({ navigation }) {
         try {
             await authenticate(inputEmail, inputPassword);
             dispatch((resetState({})))
-            navigation.replace('HomeScreen');
+            navigation.replace('HomeScreen', { screen: 'DrawerNavigator' });
         } catch (exception) {
             dispatch((resetState({})))
             switch (exception.code) {

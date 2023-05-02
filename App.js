@@ -2,7 +2,7 @@ import {StatusBar} from 'expo-status-bar';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import LoginScreen from "./screens/authScreens/LoginScreen";
 import RegisterScreen from "./screens/authScreens/RegisterScreen";
-import {NavigationContainer} from "@react-navigation/native";
+import {NavigationContainer, useNavigation} from "@react-navigation/native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {Provider} from "react-redux";
 import { store } from './store/store'
@@ -13,10 +13,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import {colors} from "./constants/colors";
 import SkateparksScreen from "./screens/SkateparksScreen";
 import SkateparkDetailsScreen from "./screens/skateparkScreens/SkateparkDetailsScreen";
+import {getUser, logout} from "./utilities/auth";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 function DrawerNavigator() {
+    const navigation = useNavigation();
+
     return (
         <Drawer.Navigator screenOptions={{
             headerTitleAlign: 'center',
@@ -38,8 +41,18 @@ function DrawerNavigator() {
                 ]}
                           labelField={"label"}
                           valueField={"value"}
-                          onChange={item => {
-                              console.log(item)
+                          onChange={async item => {
+                              switch (item.label) {
+                                  case 'My Profile':
+                                      console.log(getUser());
+                                      break;
+                                  case 'Logout':
+                                      await logout()
+                                      navigation.replace('LoginScreen');
+                                      break;
+                                  default:
+                                      console.log(item)
+                              }
                           }}
                           style={{
                               width: 130
@@ -124,6 +137,7 @@ export default function App() {
                                 color: 'white',
                                 fontSize: 28
                             },
+                            statusBarColor: colors.primary400,
                         }}>
                         <Stack.Screen name={'Drawer'}
                                       component={DrawerNavigator}
@@ -148,7 +162,6 @@ export default function App() {
                                 headerShown: true,
                                 headerTitle: 'Ride Together',
                                 headerTitleAlign: 'center'
-
                         }}
                         />
                         <Stack.Screen
@@ -156,14 +169,7 @@ export default function App() {
                             component={SkateparkDetailsScreen}
                             options={{
                                 headerShown: true,
-                                headerTitle: 'Skatepark',
-                                headerTintColor: colors.secondary500,
-                                headerStyle: {
-                                    backgroundColor: colors.primary400
-                                },
-                                statusBarColor: colors.primary400,
-                                headerTitleAlign: 'center'
-
+                                headerTitle: 'Skatepark'
                             }}
                         />
                     </Stack.Navigator>

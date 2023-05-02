@@ -8,3 +8,11 @@ export async function authenticate(email, password) {
 export async function register(email, password) {
     await createUserWithEmailAndPassword(firebaseAuth, email, password);
 }
+
+export function getUser() {
+    return firebaseAuth.currentUser;
+}
+
+export async function logout() {
+    await signOut(firebaseAuth);
+}
