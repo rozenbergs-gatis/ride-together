@@ -6,10 +6,13 @@ import {NavigationContainer} from "@react-navigation/native";
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {Provider} from "react-redux";
 import { store } from './store/store'
-import HomeScreen from "./screens/authScreens/HomeScreen";
+import HomeScreen from "./screens/HomeScreen";
 import {createDrawerNavigator} from "@react-navigation/drawer";
 import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import {colors} from "./constants/colors";
+import SkateparksScreen from "./screens/SkateparksScreen";
+import SkateparkDetailsScreen from "./screens/skateparkScreens/SkateparkDetailsScreen";
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -17,9 +20,9 @@ function DrawerNavigator() {
     return (
         <Drawer.Navigator screenOptions={{
             headerTitleAlign: 'center',
-            headerTintColor: '#FF6464',
+            headerTintColor: colors.secondary500,
             headerStyle: {
-                backgroundColor: '#313380'
+                backgroundColor: colors.primary400
             },
             headerTitleStyle: {
                 color: 'white',
@@ -54,7 +57,7 @@ function DrawerNavigator() {
                               width: 130,
                           }}
                           renderRightIcon={() => (
-                              <Ionicons name={'person'} color={'#FF6464'} size={30} style={{paddingRight: 16}}/>
+                              <Ionicons name={'person'} color={colors.secondary500} size={30} style={{paddingRight: 16}}/>
                           )}
                           selectedTextStyle={{
                               opacity: 0
@@ -71,7 +74,7 @@ function DrawerNavigator() {
                            }}
             />
             <Drawer.Screen name={'Skateparks'}
-                           component={HomeScreen}
+                           component={SkateparksScreen}
                            options={{
                                title: 'Skateparks',
                                // drawerIcon: ({color, size}) => <Ionicons name={'list'} color={color} size={size}/>
@@ -112,8 +115,15 @@ export default function App() {
                 <NavigationContainer>
                     <Stack.Navigator
                         screenOptions={{
-                            // headerStyle: {backgroundColor: GlobalStyles.colors.primary500},
-                            headerTintColor: 'white',
+                            headerTitleAlign: 'center',
+                            headerTintColor: colors.secondary500,
+                            headerStyle: {
+                                backgroundColor: colors.primary400
+                            },
+                            headerTitleStyle: {
+                                color: 'white',
+                                fontSize: 28
+                            },
                         }}>
                         <Stack.Screen name={'Drawer'}
                                       component={DrawerNavigator}
@@ -137,10 +147,24 @@ export default function App() {
                             options={{
                                 headerShown: true,
                                 headerTitle: 'Ride Together',
-                                headerTintColor: 'blue',
                                 headerTitleAlign: 'center'
 
                         }}
+                        />
+                        <Stack.Screen
+                            name="SkateparkDetails"
+                            component={SkateparkDetailsScreen}
+                            options={{
+                                headerShown: true,
+                                headerTitle: 'Skatepark',
+                                headerTintColor: colors.secondary500,
+                                headerStyle: {
+                                    backgroundColor: colors.primary400
+                                },
+                                statusBarColor: colors.primary400,
+                                headerTitleAlign: 'center'
+
+                            }}
                         />
                     </Stack.Navigator>
                     {/*<LoginScreen/>*/}
@@ -154,7 +178,7 @@ export default function App() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: colors.whiteDefault,
         alignItems: 'center',
         justifyContent: 'center',
     },

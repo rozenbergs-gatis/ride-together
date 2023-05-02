@@ -1,12 +1,13 @@
 import {Pressable, StyleSheet, Text, View} from "react-native";
+import {colors} from "../constants/colors";
 
-function Section({ children }) {
+function Section({ children, hideButton }) {
     return (
         <View style={styles.section}>
             <Text style={styles.sectionText}>{children}</Text>
-            <Pressable>
+            { !hideButton && <Pressable>
                 <Text style={styles.buttonText}>See more</Text>
-            </Pressable>
+            </Pressable>}
         </View>
     );
 }
@@ -17,13 +18,16 @@ const styles = StyleSheet.create({
     section: {
         flex: 1,
         backgroundColor: 'grey',
+        justifyContent: 'center',
         elevation: 4
     },
     sectionText: {
         fontWeight: 'bold',
-        fontSize: 14
+        fontSize: 18,
+        marginLeft: 10
     },
     buttonText: {
-        color: '#FF6464'
+        color: colors.secondary500,
+        marginLeft: 10
     }
 });

@@ -1,0 +1,46 @@
+[
+  {
+    "skatepark_id": 1,
+    "name": "Kuldīgas skatepark",
+    "type": "Wood",
+    "working_hours": "24 hours",
+    "location_street": "Pētera iela 7, Kuldīga, Kuldīgas pilsēta, LV-3301",
+    "rating": 0,
+    "rating_count": 0
+  },
+  {
+    "skatepark_id": 2,
+    "name": "Kuldīgas indoor skatepark",
+    "type": "Wood",
+    "working_hours": "24 hours",
+    "location_street": "Tehnikas iela 9, Kuldīga, Kuldīgas pilsēta, LV-3301",
+    "rating": 0,
+    "rating_count": 0
+  },
+  {
+    "skatepark_id": 3,
+    "name": "Ventspils skatepark",
+    "type": "Concrete",
+    "working_hours": {
+      "monday": "7 - 23",
+      "tuesday": "7 - 23",
+      "wednesday": "7 - 23",
+      "thursday": "7 - 23",
+      "friday": "7 - 23",
+      "saturday": "7 - 23",
+      "sunday": "7 - 23"
+    },
+    "location_street": "Kuldīgas iela 63, Ventspils, LV-3601",
+    "rating": 0,
+    "rating_count": 0
+  },
+  {
+    "skatepark_id": 4,
+    "name": "Liepājas skatepark",
+    "type": "Wood",
+    "working_hours": "24 hours",
+    "location_street": "Jūrmalas iela 2, Liepāja, LV-3401",
+    "rating": 0,
+    "rating_count": 0
+  }
+]
