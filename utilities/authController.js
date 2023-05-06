@@ -6,13 +6,15 @@ import {
     createUserWithEmailAndPassword,
 } from 'firebase/auth';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import {addUserToDb} from "./userController";
 
 export async function authenticate(email, password) {
     return signInWithEmailAndPassword(firebaseAuth, email, password)
 }
 
 export async function register(email, password) {
-    await createUserWithEmailAndPassword(firebaseAuth, email, password);
+    const user = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+    await addUserToDb(user.user);
 }
 
 export async function logout() {
@@ -34,6 +36,7 @@ export async function getCurrentUser() {
         if (currentToken !== token) {
             await AsyncStorage.setItem('token', token);
         }
+        return firebaseAuth.currentUser;
     }
     else {
         console.log('User does not exist...');

@@ -1,6 +1,6 @@
 import {Alert, Button, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import {useState} from "react";
-import {register} from "../../utilities/auth";
+import {register} from "../../utilities/authController";
 import {useDispatch, useSelector} from "react-redux";
 import {setEmail, setPassword, resetState} from "../../store/authStates/auth";
 import {colors} from "../../constants/colors";
@@ -52,6 +52,8 @@ function RegisterScreen({navigation}) {
                         dispatch((setPassword({ password: false })));
                         break;
                     default:
+                        console.log(exception.code);
+                        console.log(exception.message);
                         Alert.alert('Unknown Error', 'Please try again later!');
                 }
             }

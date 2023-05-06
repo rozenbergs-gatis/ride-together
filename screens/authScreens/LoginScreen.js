@@ -1,7 +1,7 @@
 import {Alert, Button, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {authenticate} from "../../utilities/auth";
+import {authenticate} from "../../utilities/authController";
 import {resetState, setEmail, setPassword} from "../../store/authStates/auth";
 import {colors} from "../../constants/colors";
 import {setAuthToken} from "../../store/authStates/login";

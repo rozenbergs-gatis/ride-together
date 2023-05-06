@@ -1,5 +1,5 @@
 import {StatusBar} from 'expo-status-bar';
-import {AppRegistry, Pressable, StyleSheet, Text, View} from 'react-native';
+import {AppRegistry, StyleSheet} from 'react-native';
 import LoginScreen from "./screens/authScreens/LoginScreen";
 import RegisterScreen from "./screens/authScreens/RegisterScreen";
 import {NavigationContainer, useNavigation} from "@react-navigation/native";
@@ -11,13 +11,15 @@ import {createDrawerNavigator} from "@react-navigation/drawer";
 import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {colors} from "./constants/colors";
-import SkateparksScreen from "./screens/SkateparksScreen";
+import SkateparksScreen from "./screens/skateparkScreens/SkateparksScreen";
 import SkateparkDetailsScreen from "./screens/skateparkScreens/SkateparkDetailsScreen";
-import {getCurrentUser, logout} from "./utilities/auth";
+import {getCurrentUser, logout} from "./utilities/authController";
 import {useEffect, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {removeAuthToken, setAuthToken} from "./store/authStates/login";
-import AppLoading from "expo-app-loading";
+import CreatorsSpaceScreen from "./screens/creatorsSpaceScreens/CreatorsSpaceScreen";
+import AddNewTutorial from "./screens/creatorsSpaceScreens/AddNewTutorial";
+import Spinner from "./components/Spinner";
 AppRegistry.registerComponent('main',() => App);
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -121,7 +123,7 @@ function Root() {
     }, []);
 
     if(isTryingLogIn) {
-        return <AppLoading />;
+        return <Spinner deps={[]}/>;
     }
 
     return <Navigation />;
@@ -154,10 +156,10 @@ function DrawerNavigator() {
                           onChange={async item => {
                               switch (item.label) {
                                   case 'My Profile':
-                                      console.log(getCurrentUser());
+                                      console.log(await getCurrentUser());
                                       break;
                                   case 'Creators Space':
-                                      console.log(getCurrentUser());
+                                      navigation.navigate('CreatorsSpace');
                                       break;
                                   case 'Logout':
                                       await logout()
@@ -177,7 +179,8 @@ function DrawerNavigator() {
                               opacity: 0
                           }}
                           containerStyle={{
-                              width: 150
+                              width: 150,
+                              marginTop: 10
                           }}
                           itemContainerStyle={{
                               width: 130,
@@ -227,6 +230,24 @@ function DrawerNavigator() {
                 component={HomeScreen}
                 options={{
                     title: 'Forum',
+                    // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+                }}
+            />
+            <Drawer.Screen
+                name={'CreatorsSpace'}
+                component={CreatorsSpaceScreen}
+                options={{
+                    title: 'Creators Space',
+                    drawerItemStyle: {display: 'none'}
+                    // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+                }}
+            />
+            <Drawer.Screen
+                name={'AddNewTutorial'}
+                component={AddNewTutorial}
+                options={{
+                    title: 'Add New Tutorial',
+                    drawerItemStyle: {display: 'none'}
                     // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
                 }}
             />
