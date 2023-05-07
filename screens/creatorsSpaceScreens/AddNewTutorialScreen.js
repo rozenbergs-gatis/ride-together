@@ -1,11 +1,11 @@
 import {Alert, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import {colors} from "../../constants/colors";
-import {useCallback, useEffect, useRef, useState} from "react";
+import {useCallback, useRef, useState} from "react";
 import TabButton from "../../components/creatorsSpace/TabButton";
 import PrimaryButton from "../../components/PrimaryButton";
 import SmallButton from "../../components/SmallButton";
 import {launchImageLibraryAsync, MediaTypeOptions} from 'expo-image-picker'
-import {Video, ResizeMode} from 'expo-av';
+import {ResizeMode, Video} from 'expo-av';
 import {AntDesign} from '@expo/vector-icons';
 import {deleteTutorialVideo, uploadTutorialVideo} from "../../utilities/fileController";
 import {
@@ -18,6 +18,7 @@ import Spinner from "../../components/Spinner";
 import {setRefreshData, setTutorialDisplayData} from "../../store/tutorialStates/userTutorials";
 import {useDispatch} from "react-redux";
 import {useFocusEffect} from "@react-navigation/native";
+import {Snackbar} from "react-native-paper";
 
 function AddNewTutorialScreen({navigation, route}) {
     const [inputTitle, setInputTitle] = useState('');
@@ -27,6 +28,7 @@ function AddNewTutorialScreen({navigation, route}) {
     const [selectedVideo, setSelectedVideo] = useState(null);
     const [uploading, setUploading] = useState(false);
     const [status, setStatus] = useState({});
+    const [showSnackbarMessage, setShowSnackbarMessage] = useState(false);
     const video = useRef(null);
     const dispatch = useDispatch();
     const tutorialData = route.params;
@@ -49,11 +51,15 @@ function AddNewTutorialScreen({navigation, route}) {
     }, [tutorialData]));
 
     async function selectVideo() {
-        let result = await launchImageLibraryAsync({
+        launchImageLibraryAsync({
             mediaTypes: MediaTypeOptions.Videos,
-        })
-        const source = result.assets[0];
-        setSelectedVideo(source);
+        }).then((result) => {
+            const source = result.assets[0];
+            setSelectedVideo(source);
+        }).catch(e => {
+            console.log(e);
+            setShowSnackbarMessage(true);
+        });
     }
 
     async function saveAndPublish() {
@@ -280,6 +286,16 @@ function AddNewTutorialScreen({navigation, route}) {
                         }
                     </View>
                 }
+            </View>
+
+            {/*Informative message if the end user does not select a video*/}
+            <View style={{flex: 1}}>
+                <Snackbar
+                    visible={showSnackbarMessage}
+                    onDismiss={() => {setShowSnackbarMessage(false)}}
+                    wrapperStyle={{borderRadius: 16, elevation: 6}}
+                    duration={3000}
+                >Video not selected</Snackbar>
             </View>
 
             {/*Save tutorial section*/}

@@ -32,11 +32,13 @@ function CreatorsSpaceScreen({navigation}) {
     const reloadData = useSelector((state) => state.userTutorials.refreshData);
     const dispatch = useDispatch();
 
-    useEffect(() => {
-        async function fetchTutorials() {
+    useEffect((type) => {
+        async function fetchTutorials(type) {
+            setTrickTutorialsActive(true);
+            setBuildTutorialsActive(false);
             const user = await getCurrentUser();
             let userTutorialIds = [];
-            await getAllUserCreatedTutorials(user, 'trick').then((userTutorials) => {
+            await getAllUserCreatedTutorials(user, type).then((userTutorials) => {
                 const userTutorialList = userTutorials.val()
                 const keys = Object.keys(userTutorialList);
                 keys.forEach((key) => {
@@ -48,18 +50,24 @@ function CreatorsSpaceScreen({navigation}) {
             if (userTutorialIds.length > 0) {
                 Promise.all(
                     userTutorialIds.map(tutorialIds => {
-                        return getTutorial(tutorialIds, 'trick')
+                        return getTutorial(tutorialIds, type)
                     })
                 ).then(resp => {
-                    dispatch(setUserTrickTutorials({ userTrickTutorials: resp }));
-                    dispatch(setTutorialDisplayData({ displayTutorials: resp }));
+                    if (type === 'trick') {
+                        dispatch(setUserTrickTutorials({ userTrickTutorials: resp }));
+                        dispatch(setTutorialDisplayData({ displayTutorials: resp }));
+                    }
+                    else {
+                        dispatch(setUserBuildTutorials({ userBuildTutorials: resp }));
+                    }
                 });
             }
             setScreenLoading(false);
             dispatch(setRefreshData({ refreshData: false }));
         }
 
-        fetchTutorials();
+        fetchTutorials('trick');
+        fetchTutorials('build');
     }, [reloadData])
 
     const firstUpdate = useRef(true);
