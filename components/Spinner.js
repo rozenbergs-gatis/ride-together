@@ -1,40 +1,43 @@
-import LottieView from "lottie-react-native";
-import {StyleSheet, View} from "react-native";
-import {useEffect, useRef} from "react";
+import React, { useEffect, useRef } from 'react';
+import LottieView from 'lottie-react-native';
+import { StyleSheet, View } from 'react-native';
 
-function Spinner({deps}) {
-    const animation = useRef(null);
+import assets from '../assets/spinner.json';
 
-    useEffect(() => {
-        animation.current?.reset();
-        setTimeout(() => {
-            animation.current?.play();
-        }, 100)
-    }, deps)
+function Spinner({ deps }) {
+  const animation = useRef(null);
 
-    return (
-        <View style={styles.animationContainer}>
-            <LottieView
-                autoPlay
-                ref={animation}
-                style={{
-                    width: 300,
-                    height: 300,
-                    backgroundColor: 'transparent',
-                }}
-                source={require('../assets/spinner.json')}
-            />
-        </View>
-    );
+  useEffect(() => {
+    animation.current?.reset();
+    setTimeout(() => {
+      animation.current?.play();
+    }, 100);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
+
+  return (
+    <View style={styles.animationContainer}>
+      <LottieView
+        autoPlay
+        ref={animation}
+        style={{
+          width: 300,
+          height: 300,
+          backgroundColor: 'transparent',
+        }}
+        source={assets}
+      />
+    </View>
+  );
 }
 
 export default Spinner;
 
 const styles = StyleSheet.create({
-    animationContainer: {
-        backgroundColor: 'transparent',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
-    },
+  animationContainer: {
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
 });
