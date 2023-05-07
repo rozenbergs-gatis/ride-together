@@ -18,7 +18,7 @@ import {useEffect, useState} from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {removeAuthToken, setAuthToken} from "./store/authStates/login";
 import CreatorsSpaceScreen from "./screens/creatorsSpaceScreens/CreatorsSpaceScreen";
-import AddNewTutorial from "./screens/creatorsSpaceScreens/AddNewTutorial";
+import AddNewTutorialScreen from "./screens/creatorsSpaceScreens/AddNewTutorialScreen";
 import Spinner from "./components/Spinner";
 AppRegistry.registerComponent('main',() => App);
 const Stack = createNativeStackNavigator();
@@ -244,9 +244,18 @@ function DrawerNavigator() {
             />
             <Drawer.Screen
                 name={'AddNewTutorial'}
-                component={AddNewTutorial}
+                component={AddNewTutorialScreen}
                 options={{
                     title: 'Add New Tutorial',
+                    drawerItemStyle: {display: 'none'}
+                    // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+                }}
+            />
+            <Drawer.Screen
+                name={'EditTutorial'}
+                component={AddNewTutorialScreen}
+                options={{
+                    title: 'Edit Tutorial',
                     drawerItemStyle: {display: 'none'}
                     // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
                 }}

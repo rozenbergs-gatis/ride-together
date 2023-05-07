@@ -1,17 +1,25 @@
 import {Alert, Pressable, StyleSheet, Text, TextInput, View} from "react-native";
 import {colors} from "../../constants/colors";
-import {useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import TabButton from "../../components/creatorsSpace/TabButton";
 import PrimaryButton from "../../components/PrimaryButton";
 import SmallButton from "../../components/SmallButton";
 import {launchImageLibraryAsync, MediaTypeOptions} from 'expo-image-picker'
 import {Video, ResizeMode} from 'expo-av';
 import {AntDesign} from '@expo/vector-icons';
-import {uploadTutorialVideo} from "../../utilities/fileController";
-import {addBuildTutorial, addTrickTutorial, addTutorialToCurrentUser} from "../../utilities/tutorialController";
+import {deleteTutorialVideo, uploadTutorialVideo} from "../../utilities/fileController";
+import {
+    addBuildTutorial,
+    addTrickTutorial,
+    addTutorialToCurrentUser,
+    updateTutorial
+} from "../../utilities/tutorialController";
 import Spinner from "../../components/Spinner";
+import {setRefreshData, setTutorialDisplayData} from "../../store/tutorialStates/userTutorials";
+import {useDispatch} from "react-redux";
+import {useFocusEffect} from "@react-navigation/native";
 
-function AddNewTutorial({navigation}) {
+function AddNewTutorialScreen({navigation, route}) {
     const [inputTitle, setInputTitle] = useState('');
     const [inputDescription, setInputDescription] = useState('');
     const [selectedType, setSelectedType] = useState('Trick');
@@ -20,6 +28,25 @@ function AddNewTutorial({navigation}) {
     const [uploading, setUploading] = useState(false);
     const [status, setStatus] = useState({});
     const video = useRef(null);
+    const dispatch = useDispatch();
+    const tutorialData = route.params;
+
+    useFocusEffect(useCallback(() => {
+        if (tutorialData) {
+            setInputTitle(tutorialData.title);
+            setSelectedType(tutorialData.type);
+            if (tutorialData.level) setSelectedLevel(tutorialData.level);
+            setInputDescription(tutorialData.description);
+            setSelectedVideo({uri: tutorialData.video_url})
+        }
+        else {
+            setInputTitle('');
+            setSelectedType('Trick');
+            setSelectedLevel('Beginner');
+            setInputDescription('');
+            setSelectedVideo(null);
+        }
+    }, [tutorialData]));
 
     async function selectVideo() {
         let result = await launchImageLibraryAsync({
@@ -47,6 +74,33 @@ function AddNewTutorial({navigation}) {
             const tutorialId = trickUrl.toString().split('/').pop();
             await addTutorialToCurrentUser(tutorialId, selectedType);
             setUploading(false);
+            dispatch(setRefreshData({ refreshData: true }));
+            navigation.navigate('CreatorsSpace');
+        }
+        else {
+            Alert.alert('Missing fields', 'Please try fill out all the fields and add a video!');
+        }
+    }
+
+    async function saveChanges() {
+        if (inputTitle !== '' && inputDescription !== '' && selectedVideo) {
+            setUploading(true);
+            let videoUrl = selectedVideo.uri
+            if (tutorialData.video_url !== selectedVideo.uri) {
+                await deleteTutorialVideo(tutorialData.video_url);
+                videoUrl = await uploadTutorialVideo(selectedVideo.uri);
+            }
+            tutorialData.title = inputTitle;
+            tutorialData.description = inputDescription;
+            if(tutorialData.level) tutorialData.level = selectedLevel;
+            tutorialData.video_url = videoUrl;
+            const tutorialId = tutorialData.id;
+            ['id', 'userTutorialId'].forEach(e => delete tutorialData[e]);
+            await updateTutorial(selectedType, tutorialId, tutorialData);
+
+            setUploading(false);
+            dispatch(setTutorialDisplayData({ displayTutorials: [] }));
+            dispatch(setRefreshData({ refreshData: true }));
             navigation.navigate('CreatorsSpace');
         }
         else {
@@ -96,7 +150,7 @@ function AddNewTutorial({navigation}) {
             </View>
 
             {/*Tutorial Type selection section*/}
-            <View style={styles.inputContainer}>
+            {!tutorialData && <View style={styles.inputContainer}>
                 <Text style={styles.buttonText}>Select Type</Text>
                 <View style={styles.buttonsContainer}>
                     <SmallButton
@@ -122,7 +176,7 @@ function AddNewTutorial({navigation}) {
                         }}
                     />
                 </View>
-            </View>
+            </View>}
 
             {/*Tutorial Level selection section*/}
             {selectedType === 'Trick' && <View style={styles.inputContainer}>
@@ -183,12 +237,12 @@ function AddNewTutorial({navigation}) {
             {/*Tutorial Add Video section*/}
             <View style={styles.addVideoContainer}>
                 <PrimaryButton
-                    buttonTitle={'Add Video'}
-                    style={!!selectedVideo ? {backgroundColor: colors.placeholderDefault} : {backgroundColor: colors.secondary500}}
+                    buttonTitle={tutorialData ? 'Change Video' : 'Add Video'}
+                    style={(!tutorialData && !!selectedVideo) ? {backgroundColor: colors.placeholderDefault} : {backgroundColor: colors.secondary500}}
                     rippleColor={colors.secondary400}
                     outerContainerStyle={{width: '90%'}}
                     onPress={selectVideo}
-                    disabled={!!selectedVideo}
+                    disabled={(!tutorialData && !!selectedVideo)}
                 />
                 {/*<Video*/}
                 {/*    ref={video}*/}
@@ -216,12 +270,14 @@ function AddNewTutorial({navigation}) {
                             isLooping
                             onPlaybackStatusUpdate={status => setStatus(() => status)}
                         />
+                        { !tutorialData &&
                         <Pressable style={styles.removeVideoButton}
                                    onPress={() => {
                                        setSelectedVideo(null);
                                    }}>
                             <AntDesign name="closecircle" size={24} color={colors.secondary500}/>
                         </Pressable>
+                        }
                     </View>
                 }
             </View>
@@ -230,27 +286,18 @@ function AddNewTutorial({navigation}) {
             <View style={{flex: 1, justifyContent: 'flex-end',}}>
                 <View style={styles.buttonsContainer}>
                     <TabButton
-                        buttonTitle={'Save as draft'}
-                        style={{backgroundColor: colors.backDrop, borderBottomLeftRadius: 16, height: 60}}
-                        textStyle={{color: colors.secondary500}}
-                        rippleColor={colors.whiteDefault}
-                        selectedContainerStyle={styles.selectedTutorialType}
-                        onPress={() => {
-
-                        }}/>
-                    <TabButton
-                        buttonTitle={'Save & Publish'}
+                        buttonTitle={tutorialData ? 'Save Changes' : 'Save & Publish'}
                         rippleColor={colors.secondary400}
-                        style={{backgroundColor: colors.secondary500, borderBottomRightRadius: 16, height: 60}}
+                        style={{backgroundColor: colors.secondary500, borderBottomLeftRadius: 16, borderBottomRightRadius: 16, height: 60}}
                         selectedContainerStyle={styles.selectedTutorialType}
-                        onPress={saveAndPublish}/>
+                        onPress={tutorialData ? saveChanges : saveAndPublish}/>
                 </View>
             </View>
         </View>
     );
 }
 
-export default AddNewTutorial;
+export default AddNewTutorialScreen;
 
 const styles = StyleSheet.create({
     root: {

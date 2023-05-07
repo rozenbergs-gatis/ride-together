@@ -10,18 +10,26 @@ import {deleteTutorial, getTutorial} from "../../utilities/tutorialController";
 import Spinner from "../../components/Spinner";
 import {AntDesign, FontAwesome5} from "@expo/vector-icons";
 import {deleteTutorialVideo} from "../../utilities/fileController";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
+import {
+    setRefreshData,
+    setTutorialDisplayData,
+    setUserBuildTutorials,
+    setUserTrickTutorials
+} from "../../store/tutorialStates/userTutorials";
 
 function CreatorsSpaceScreen({navigation}) {
     const [screenLoading, setScreenLoading] = useState(true);
     const [myTutorialsActive, setMyTutorialsActive] = useState(true);
     const [myForumsActive, setMyForumsActive] = useState(false);
-    const [tutorialsPublishedActive, setTutorialsPublishedActive] = useState(true);
-    const [tutorialsDraftActive, setTutorialsDraftActive] = useState(false);
-    const [userTutorials, setUserTutorials] = useState([]);
-    const [displayTutorials, setDisplayTutorials] = useState([]);
+    const [trickTutorialsActive, setTrickTutorialsActive] = useState(true);
+    const [buildTutorialsActive, setBuildTutorialsActive] = useState(false);
     const [searchInput, setSearchInput] = useState('');
-    const [deleteTutorialStatus, setDeleteTutorialStatus] = useState(false);
+
+    const userTrickTutorials = useSelector((state) => state.userTutorials.userTrickTutorials);
+    const userBuildTutorials = useSelector((state) => state.userTutorials.userBuildTutorials);
+    const displayTutorials = useSelector((state) => state.userTutorials.displayTutorials);
+    const reloadData = useSelector((state) => state.userTutorials.refreshData);
     const dispatch = useDispatch();
 
     useEffect(() => {
@@ -40,19 +48,19 @@ function CreatorsSpaceScreen({navigation}) {
             if (userTutorialIds.length > 0) {
                 Promise.all(
                     userTutorialIds.map(tutorialIds => {
-                        return getTutorial(tutorialIds)
+                        return getTutorial(tutorialIds, 'trick')
                     })
                 ).then(resp => {
-                    setUserTutorials(resp);
-                    setDisplayTutorials(resp);
+                    dispatch(setUserTrickTutorials({ userTrickTutorials: resp }));
+                    dispatch(setTutorialDisplayData({ displayTutorials: resp }));
                 });
             }
             setScreenLoading(false);
-            setDeleteTutorialStatus(false);
+            dispatch(setRefreshData({ refreshData: false }));
         }
 
         fetchTutorials();
-    }, [deleteTutorialStatus])
+    }, [reloadData])
 
     const firstUpdate = useRef(true);
     useLayoutEffect(() => {
@@ -62,11 +70,11 @@ function CreatorsSpaceScreen({navigation}) {
         }
 
         const searchDelay = setTimeout(() => {
-            let filteredData = userTutorials.filter((tutorial) => {
+            let filteredData = userTrickTutorials.filter((tutorial) => {
                 return tutorial.title.toLowerCase().includes(searchInput.toLowerCase());
             })
             setSearchInput(searchInput);
-            setDisplayTutorials(filteredData);
+            dispatch(setTutorialDisplayData({ displayTutorials: filteredData }));
         }, 1000);
 
         return () => clearTimeout(searchDelay);
@@ -89,7 +97,7 @@ function CreatorsSpaceScreen({navigation}) {
                                 await deleteUserTutorial(await getCurrentUser(), itemData.item.type, itemData.item.userTutorialId);
                                 await deleteTutorial(itemData.item.type.toLowerCase(), itemData.item.id);
                                 await deleteTutorialVideo(itemData.item.video_url);
-                                setDeleteTutorialStatus(true);
+                                dispatch(setRefreshData({ refreshData: true }));
                                 setSearchInput('');
                             }},
                         ]);
@@ -100,6 +108,7 @@ function CreatorsSpaceScreen({navigation}) {
                 <Pressable
                     style={styles.editActionButton}
                     onPress={() => {
+                        navigation.navigate('EditTutorial', itemData.item);
                     }}>
                     <FontAwesome5 name="edit" size={36} color={colors.secondary500}/>
                 </Pressable>
@@ -159,22 +168,26 @@ function CreatorsSpaceScreen({navigation}) {
             <View style={styles.contentContainer}>
                 <View style={styles.buttonsContainer}>
                     <TabButton
-                        buttonTitle={'Published'}
+                        buttonTitle={'Tricks'}
                         style={{backgroundColor: colors.placeholderDefault, borderTopLeftRadius: 16, height: 50}}
                         rippleColor={colors.secondary500}
-                        selectedContainerStyle={tutorialsPublishedActive && styles.selectedTutorialType}
+                        selectedContainerStyle={trickTutorialsActive && styles.selectedTutorialType}
                         onPress={() => {
-                            setTutorialsPublishedActive(true);
-                            setTutorialsDraftActive(false);
+                            setTrickTutorialsActive(true);
+                            setBuildTutorialsActive(false);
+                            setSearchInput('');
+                            dispatch(setTutorialDisplayData({ displayTutorials: userTrickTutorials }));
                         }}/>
                     <TabButton
-                        buttonTitle={'Drafts'}
+                        buttonTitle={'Builds'}
                         rippleColor={colors.secondary500}
                         style={{backgroundColor: colors.placeholderDefault, borderTopRightRadius: 16, height: 50}}
-                        selectedContainerStyle={tutorialsDraftActive && styles.selectedTutorialType}
+                        selectedContainerStyle={buildTutorialsActive && styles.selectedTutorialType}
                         onPress={async () => {
-                            setTutorialsPublishedActive(false);
-                            setTutorialsDraftActive(true);
+                            setTrickTutorialsActive(false);
+                            setBuildTutorialsActive(true);
+                            setSearchInput('');
+                            dispatch(setTutorialDisplayData({ displayTutorials: userBuildTutorials }));
                         }}/>
                 </View>
                 <View style={styles.tutorialList}>

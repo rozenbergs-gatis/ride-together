@@ -1,9 +1,9 @@
-import {get, push, ref, remove} from "firebase/database";
+import {get, push, ref, remove, update} from "firebase/database";
 import {database} from "../firebase/firebaseConfig";
 import {getCurrentUser} from "./authController";
 
-export async function getTutorial(ids) {
-    return get(ref(database, `trick_tutorials/${ids.id}`)).then((snapshot) => {
+export async function getTutorial(ids, type) {
+    return get(ref(database, `${type}_tutorials/${ids.id}`)).then((snapshot) => {
         return {...snapshot.val(), ...ids}
     })
 }
@@ -37,6 +37,10 @@ export async function addBuildTutorial(data) {
 
 export async function deleteTutorial(type, id) {
     await remove(ref(database, `${type}_tutorials/${id}`))
+}
+
+export async function updateTutorial(type, id, data){
+    await update(ref(database, `${type.toLowerCase()}_tutorials/${id}`), data)
 }
 
 export async function addTutorialToCurrentUser(id, type) {

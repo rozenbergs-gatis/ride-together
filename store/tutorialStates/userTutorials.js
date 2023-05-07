@@ -9,20 +9,20 @@ const userTutorialsSlice = createSlice({
         refreshData: false
     },
     reducers: {
-        setDisplayData: (state, action) => {
+        setTutorialDisplayData: (state, action) => {
             state.displayTutorials = action.payload.displayTutorials;
         },
         setRefreshData: (state, action) => {
             state.refreshData = action.payload.refreshData;
         },
         setUserTrickTutorials: (state, action) => {
-            state.refreshData = action.payload.refreshData;
+            state.userTrickTutorials = action.payload.userTrickTutorials;
         },
         setUserBuildTutorials: (state, action) => {
-            state.refreshData = action.payload.refreshData;
+            state.userBuildTutorials = action.payload.userBuildTutorials;
         }
     }
 });
 
-export const { setDisplayData, setRefreshData, setUserTrickTutorials, setUserBuildTutorials } = userTutorialsSlice.actions
+export const { setTutorialDisplayData, setRefreshData, setUserTrickTutorials, setUserBuildTutorials } = userTutorialsSlice.actions
 export default userTutorialsSlice.reducer;
