@@ -1,8 +1,8 @@
 import {Text, View, StyleSheet, Button, Pressable, FlatList} from "react-native";
-import {colors} from "../constants/colors";
+import {colors} from "../../constants/colors";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import {TextInput, } from 'react-native-paper';
-import * as skateparks from '../data/skateparks.json'
+import * as skateparks from '../../data/skateparks.json'
 import {useNavigation} from "@react-navigation/native";
 
 function SkateparksScreen() {
@@ -27,6 +27,7 @@ function SkateparksScreen() {
                 <TextInput placeholder={'Search'}
                            placeholderTextColor={colors.placeholderDefault}
                            style={styles.input}
+                           textColor={colors.whiteDefault}
                            underlineColor={'transparent'}
                            activeUnderlineColor={'transparent'}
                            autoCapitalize={'none'}
