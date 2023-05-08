@@ -92,47 +92,53 @@ function CreatorsSpaceScreen({ navigation }) {
 
   const myTutorials = (itemData) => (
     <View style={styles.tutorialContainer}>
-      <Pressable
-        style={styles.deleteActionButton}
-        onPress={() => {
-          Alert.alert(
-            'Delete tutorial',
-            `Are you sure you want to delete tutorial with name ${itemData.item.title}?`,
-            [
-              {
-                text: 'No',
-                onPress: () => {},
-                style: 'cancel',
-              },
-              {
-                text: 'Yes',
-                onPress: async () => {
-                  await deleteUserTutorial(
-                    await getCurrentUser(),
-                    itemData.item.type,
-                    itemData.item.userTutorialId
-                  );
-                  await deleteTutorial(itemData.item.type.toLowerCase(), itemData.item.id);
-                  await deleteTutorialVideo(itemData.item.video_url);
-                  dispatch(setRefreshData({ refreshData: true }));
-                  setSearchInput('');
+      <View style={{ flexShrink: 1 }}>
+        <Pressable
+          style={styles.deleteActionButton}
+          onPress={() => {
+            Alert.alert(
+              'Delete tutorial',
+              `Are you sure you want to delete tutorial with name ${itemData.item.title}?`,
+              [
+                {
+                  text: 'No',
+                  onPress: () => {},
+                  style: 'cancel',
                 },
-              },
-            ]
-          );
-        }}
-      >
-        <AntDesign name="closecircle" size={36} color={colors.secondary500} />
-      </Pressable>
-      <Text style={styles.tutorialText}>{itemData.item.title}</Text>
-      <Pressable
-        style={styles.editActionButton}
-        onPress={() => {
-          navigation.navigate('EditTutorial', itemData.item);
-        }}
-      >
-        <FontAwesome5 name="edit" size={36} color={colors.secondary500} />
-      </Pressable>
+                {
+                  text: 'Yes',
+                  onPress: async () => {
+                    await deleteUserTutorial(
+                      await getCurrentUser(),
+                      itemData.item.type,
+                      itemData.item.userTutorialId
+                    );
+                    await deleteTutorial(itemData.item.type.toLowerCase(), itemData.item.id);
+                    await deleteTutorialVideo(itemData.item.video_url);
+                    dispatch(setRefreshData({ refreshData: true }));
+                    setSearchInput('');
+                  },
+                },
+              ]
+            );
+          }}
+        >
+          <AntDesign name="closecircle" size={36} color={colors.secondary500} />
+        </Pressable>
+      </View>
+      <View style={{ flex: 1, alignItems: 'center' }}>
+        <Text style={styles.tutorialText}>{itemData.item.title}</Text>
+      </View>
+      <View style={{ flexShrink: 1 }}>
+        <Pressable
+          style={styles.editActionButton}
+          onPress={() => {
+            navigation.navigate('EditTutorial', itemData.item);
+          }}
+        >
+          <FontAwesome5 name="edit" size={36} color={colors.secondary500} />
+        </Pressable>
+      </View>
     </View>
   );
 

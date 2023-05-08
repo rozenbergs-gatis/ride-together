@@ -12,6 +12,7 @@ const colors = {
   whiteDefault: '#fff',
   blackDefault: '#000000',
   redDefault: '#FF0000',
+  labelGreen: '#83BF4F',
 };
 
 export default colors;

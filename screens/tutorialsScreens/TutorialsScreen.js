@@ -1,12 +1,134 @@
-import React, { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { TextInput } from 'react-native-paper';
+import { useDispatch, useSelector } from 'react-redux';
+import { ResizeMode, Video } from 'expo-av';
+import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import colors from '../../constants/colors';
-import PrimaryButton from '../../components/PrimaryButton';
+import SmallButton from '../../components/SmallButton';
+import { getAllTutorials } from '../../utilities/tutorialController';
+import {
+  setBuildTutorials,
+  setTrickTutorials,
+  setRefreshData,
+  setTutorialDisplayData,
+} from '../../store/tutorialStates/globalTutorials';
+import { addFavorite, removeFavorite } from '../../store/tutorialStates/userFavoriteTutorials';
 
 function TutorialsScreen() {
+  const [screenLoading, setScreenLoading] = useState(true);
   const [learnTricksActive, setLearnTricksActive] = useState(true);
   const [learnBuildActive, setLearnBuildActive] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('All');
+
+  const trickTutorials = useSelector((state) => state.globalTutorials.trickTutorials);
+  const buildTutorials = useSelector((state) => state.globalTutorials.buildTutorials);
+  const displayTutorials = useSelector((state) => state.globalTutorials.displayTutorials);
+  const reloadData = useSelector((state) => state.globalTutorials.refreshData);
+  const userFavoriteTutorials = useSelector((state) => state.userFavoriteTutorials.ids);
+  const dispatch = useDispatch();
+  const video = useRef(null);
+
+  useEffect(() => {
+    async function fetchTutorials(type) {
+      setLearnTricksActive(true);
+      setLearnBuildActive(false);
+      await getAllTutorials(type)
+        .then((tutorials) => {
+          if (type === 'trick') {
+            dispatch(setTrickTutorials({ trickTutorials: tutorials }));
+            dispatch(setTutorialDisplayData({ displayTutorials: tutorials }));
+          } else {
+            dispatch(setBuildTutorials({ buildTutorials: tutorials }));
+          }
+        })
+        // eslint-disable-next-line no-unused-vars
+        .catch(() => {
+          Alert.alert('Unable to fetch data', 'Please try again later');
+        });
+      setScreenLoading(false);
+      dispatch(setRefreshData({ refreshData: false }));
+    }
+
+    fetchTutorials('trick');
+    fetchTutorials('build');
+  }, [dispatch, reloadData]);
+
+  const trickItems = (itemData) => {
+    const tutorialIsFavorite = userFavoriteTutorials.includes(itemData.item.id);
+
+    const changeFavoriteHandler = () => {
+      if (tutorialIsFavorite) {
+        // favoriteMealsCtx.removeFavorite(mealId);
+        dispatch(removeFavorite({ id: itemData.item.id }));
+      } else {
+        // favoriteMealsCtx.addFavorite(mealId);
+        dispatch(addFavorite({ id: itemData.item.id }));
+      }
+    };
+
+    return (
+      <View style={styles.tutorialItemContainer}>
+        <Pressable
+          android_ripple={{ color: colors.secondary700 }}
+          style={styles.tutorialItemPressable}
+          onPress={() => {
+            // navigation.navigate('SkateparkDetails', { skateparkId: itemData.item.skatepark_id });
+          }}
+        >
+          {/* Favorite Icon view */}
+          <View style={styles.favoriteContainer}>
+            <Pressable style={styles.favoritePressable} onPress={changeFavoriteHandler}>
+              <Ionicons
+                name={tutorialIsFavorite ? 'star' : 'star-outline'}
+                size={36}
+                color={colors.secondary500}
+              />
+            </Pressable>
+          </View>
+
+          {/* Tutorial item level view */}
+          <View style={styles.tutorialLevelContainer}>
+            <Text style={styles.tutorialLevelText}>{itemData.item.level.toUpperCase()}</Text>
+          </View>
+
+          {/* Tutorial item title view */}
+          <View style={{ marginLeft: 8 }}>
+            <Text style={styles.tutorialTitle} numberOfLines={1}>
+              {itemData.item.title.length < 34
+                ? itemData.item.title
+                : `${itemData.item.title.substring(0, 31)}...`}
+            </Text>
+          </View>
+
+          {/* Tutorial item description view */}
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionText} numberOfLines={2}>
+              {itemData.item.description}
+            </Text>
+          </View>
+
+          {/* Tutorial item video preview */}
+          <View style={styles.videoContainer}>
+            <Video
+              ref={video}
+              style={styles.video}
+              source={{
+                uri: itemData.item.video_url,
+              }}
+              shouldPlay={false}
+              resizeMode={ResizeMode.COVER}
+            />
+            <Pressable style={{ position: 'absolute' }}>
+              <FontAwesome5 name="play-circle" size={96} color="grey" />
+            </Pressable>
+          </View>
+        </Pressable>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.root}>
@@ -34,49 +156,84 @@ function TutorialsScreen() {
         />
       </View>
 
-      {/* Trick filter selection buttons */}
-      <View style={styles.difficultyFilterContainer}>
-        <View style={styles.levelOuterContainer}>
-          <Pressable
-            android_ripple={styles.rippleColor}
-            style={styles.levelInnerContainer}
-            onPress={() => {}}
-          >
-            <View>
-              <Text style={styles.levelTitle}>BEGINNER</Text>
-            </View>
-          </Pressable>
-        </View>
-        <View style={styles.levelOuterContainer}>
-          <Pressable
-            android_ripple={styles.rippleColor}
-            style={styles.levelInnerContainer}
-            onPress={() => {}}
-          >
-            <View>
-              <Text style={styles.levelTitle}>INTERMEDIATE</Text>
-            </View>
-          </Pressable>
-        </View>
-        <View style={styles.levelOuterContainer}>
-          <Pressable
-            android_ripple={styles.rippleColor}
-            style={styles.levelInnerContainer}
-            onPress={() => {}}
-          >
-            <View>
-              <Text style={styles.levelTitle}>EXPERT</Text>
-            </View>
-          </Pressable>
-        </View>
+      {/* Search trick tutorial view */}
+      <View style={styles.searchContainer}>
+        <TextInput
+          placeholder="Search"
+          placeholderTextColor={colors.placeholderDefault}
+          style={styles.input}
+          textColor={colors.whiteDefault}
+          underlineColor="transparent"
+          activeUnderlineColor="transparent"
+          autoCapitalize="none"
+          value={searchInput}
+          onChangeText={(enteredValue) => {
+            setSearchInput(enteredValue);
+          }}
+          theme={{ roundness: 16 }}
+          left={
+            <TextInput.Icon
+              icon="magnify"
+              iconColor={colors.secondary500}
+              size={36}
+              style={styles.icon}
+            />
+          }
+        />
       </View>
-      <View style={styles.difficultyAllFilterContainer}>
-        <PrimaryButton
-          buttonTitle="See all"
-          style={{ backgroundColor: colors.blackDefault }}
-          outerContainerStyle={{ width: '80%' }}
-          rippleColor={colors.secondary400}
-          onPress={() => {}}
+
+      {/* Filter button view */}
+      <View style={styles.buttonsContainer}>
+        <SmallButton
+          buttonTitle="All"
+          rippleColor={colors.whiteDefault}
+          style={
+            selectedFilter === 'All'
+              ? { backgroundColor: colors.secondary500, height: 40 }
+              : { backgroundColor: colors.backDrop, height: 40 }
+          }
+          outerContainerStyle={{ width: '25%', height: 40 }}
+          buttonTextStyle={styles.cancelButtonText}
+          onPress={() => {
+            setSelectedFilter('All');
+          }}
+        />
+        <SmallButton
+          buttonTitle="Favorite"
+          rippleColor={colors.whiteDefault}
+          style={
+            selectedFilter === 'Favorite'
+              ? { backgroundColor: colors.secondary500, height: 40 }
+              : { backgroundColor: colors.backDrop, height: 40 }
+          }
+          outerContainerStyle={{ height: 40 }}
+          buttonTextStyle={styles.cancelButtonText}
+          onPress={() => {
+            setSelectedFilter('Favorite');
+          }}
+        />
+        <SmallButton
+          buttonTitle="In Progress"
+          rippleColor={colors.whiteDefault}
+          style={
+            selectedFilter === 'In Progress'
+              ? { backgroundColor: colors.secondary500, height: 40 }
+              : { backgroundColor: colors.backDrop, height: 40 }
+          }
+          outerContainerStyle={{ height: 40 }}
+          buttonTextStyle={styles.cancelButtonText}
+          onPress={() => {
+            setSelectedFilter('In Progress');
+          }}
+        />
+      </View>
+
+      {/* Trick tutorials list view */}
+      <View style={{ flex: 1 }}>
+        <FlatList
+          data={displayTutorials}
+          renderItem={trickItems}
+          keyExtractor={(item) => item.id}
         />
       </View>
     </View>
@@ -89,49 +246,91 @@ const styles = StyleSheet.create({
   root: {
     flex: 1,
   },
-  buttonsContainer: {
-    flexShrink: 1,
-    flexDirection: 'row',
-    marginBottom: 10,
-  },
   selectedButton: {
     borderBottomWidth: 5,
     borderBottomColor: colors.secondary500,
   },
-  difficultyFilterContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  difficultyAllFilterContainer: {
+  searchContainer: {
     flexShrink: 1,
-    justifyContent: 'center',
     alignItems: 'center',
+    justifyContent: 'flex-start',
+    margin: 10,
   },
-  levelOuterContainer: {
-    flex: 1,
+  input: {
+    backgroundColor: colors.primary400,
+    borderRadius: 16,
+    fontSize: 16,
     width: '90%',
+    elevation: 6,
+    color: colors.whiteDefault,
+  },
+  buttonsContainer: {
+    flexShrink: 1,
+    flexDirection: 'row',
+    marginBottom: 10,
+    justifyContent: 'space-evenly',
+    alignItems: 'stretch',
+  },
+  tutorialItemContainer: {
     borderRadius: 16,
     overflow: 'hidden',
     marginHorizontal: 16,
-    marginVertical: 8,
+    marginVertical: 12,
   },
-  levelInnerContainer: {
+  tutorialItemPressable: {
     flex: 1,
-    padding: 16,
+    paddingVertical: 8,
+    height: 450,
     borderRadius: 16,
     elevation: 4,
-    alignItems: 'center',
-    justifyContent: 'center',
     backgroundColor: colors.secondary800,
-    overflow: 'hidden',
   },
-  levelTitle: {
-    fontSize: 32,
-    fontWeight: 'bold',
+  tutorialTitle: {
+    fontSize: 20,
     color: colors.whiteDefault,
   },
-  rippleColor: {
-    color: colors.secondary700,
+  descriptionContainer: {
+    flexShrink: 1,
+    backgroundColor: colors.backDrop,
+    width: '100%',
+    height: 55,
+    padding: 4,
+  },
+  descriptionText: {
+    fontSize: 14,
+    color: colors.blackDefault,
+  },
+  favoriteContainer: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
+    flex: 0,
+    zIndex: 5,
+  },
+  favoritePressable: {
+    position: 'absolute',
+    top: 4,
+    right: 8,
+    width: 40,
+    height: 40,
+  },
+  tutorialLevelContainer: {
+    marginLeft: 8,
+    backgroundColor: colors.labelGreen,
+    alignSelf: 'flex-start',
+    borderRadius: 16,
+    padding: 2,
+  },
+  tutorialLevelText: {
+    fontSize: 12,
+    color: colors.whiteDefault,
+  },
+  videoContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  video: {
+    width: '100%',
+    height: '100%',
   },
 });

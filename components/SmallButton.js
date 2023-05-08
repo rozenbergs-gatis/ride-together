@@ -2,9 +2,16 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import colors from '../constants/colors';
 
-function SmallButton({ buttonTitle, rippleColor, style, buttonTextStyle, onPress }) {
+function SmallButton({
+  buttonTitle,
+  rippleColor,
+  style,
+  buttonTextStyle,
+  outerContainerStyle,
+  onPress,
+}) {
   return (
-    <View style={styles.outerContainer}>
+    <View style={[styles.outerContainer, outerContainerStyle]}>
       <Pressable
         android_ripple={{ color: rippleColor }}
         style={[styles.buttonContainer, style]}

@@ -9,6 +9,12 @@ export async function getTutorial(ids, type) {
   }));
 }
 
+export async function getAllTutorials(type) {
+  return get(ref(database, `${type.toLowerCase()}_tutorials/`)).then((snapshot) =>
+    Object.entries(snapshot.val()).map(([id, obj]) => ({ id, ...obj }))
+  );
+}
+
 export async function addTrickTutorial(data) {
   const user = await getCurrentUser();
   if (user) {
