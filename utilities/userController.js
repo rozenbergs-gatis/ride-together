@@ -9,7 +9,7 @@ export async function addUserToDb(user) {
   });
 }
 
-export async function getAllUserCreatedTutorials(user, type) {
+export async function getAllUserTutorialsByType(user, type) {
   return get(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_tutorials/`)).then(
     (snapshot) => snapshot
   );

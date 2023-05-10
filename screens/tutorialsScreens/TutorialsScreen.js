@@ -6,17 +6,31 @@ import { ResizeMode, Video } from 'expo-av';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import colors from '../../constants/colors';
+import types from '../../constants/tutorialTypes';
 import SmallButton from '../../components/SmallButton';
-import { getAllTutorials } from '../../utilities/tutorialController';
+import {
+  addTutorialToCurrentUser,
+  deleteTutorialFromCurrentUser,
+  getAllTutorials,
+} from '../../utilities/tutorialController';
 import {
   setBuildTutorials,
   setTrickTutorials,
   setRefreshData,
   setTutorialDisplayData,
 } from '../../store/tutorialStates/globalTutorials';
-import { addFavorite, removeFavorite } from '../../store/tutorialStates/userFavoriteTutorials';
+import {
+  addFavorite,
+  removeFavorite,
+  setFavorite,
+  setTutorialsInProgress,
+  setTutorialsLearned,
+} from '../../store/tutorialStates/userFavoriteTutorials';
+import { getAllUserTutorialsByType } from '../../utilities/userController';
+import { getCurrentUser } from '../../utilities/authController';
+import Spinner from '../../components/Spinner';
 
-function TutorialsScreen() {
+function TutorialsScreen({ navigation }) {
   const [screenLoading, setScreenLoading] = useState(true);
   const [learnTricksActive, setLearnTricksActive] = useState(true);
   const [learnBuildActive, setLearnBuildActive] = useState(false);
@@ -27,7 +41,10 @@ function TutorialsScreen() {
   const buildTutorials = useSelector((state) => state.globalTutorials.buildTutorials);
   const displayTutorials = useSelector((state) => state.globalTutorials.displayTutorials);
   const reloadData = useSelector((state) => state.globalTutorials.refreshData);
-  const userFavoriteTutorials = useSelector((state) => state.userFavoriteTutorials.ids);
+  const userFavoriteTutorials = useSelector((state) => state.userFavoriteTutorials.favoriteIds);
+  const userTutorialsInProgress = useSelector(
+    (state) => state.userFavoriteTutorials.tutorialsInProgress
+  );
   const dispatch = useDispatch();
   const video = useRef(null);
 
@@ -37,14 +54,13 @@ function TutorialsScreen() {
       setLearnBuildActive(false);
       await getAllTutorials(type)
         .then((tutorials) => {
-          if (type === 'trick') {
+          if (type === types.trick) {
             dispatch(setTrickTutorials({ trickTutorials: tutorials }));
             dispatch(setTutorialDisplayData({ displayTutorials: tutorials }));
           } else {
             dispatch(setBuildTutorials({ buildTutorials: tutorials }));
           }
         })
-        // eslint-disable-next-line no-unused-vars
         .catch(() => {
           Alert.alert('Unable to fetch data', 'Please try again later');
         });
@@ -52,22 +68,107 @@ function TutorialsScreen() {
       dispatch(setRefreshData({ refreshData: false }));
     }
 
-    fetchTutorials('trick');
-    fetchTutorials('build');
+    fetchTutorials(types.trick);
+    fetchTutorials(types.build);
   }, [dispatch, reloadData]);
 
-  const trickItems = (itemData) => {
-    const tutorialIsFavorite = userFavoriteTutorials.includes(itemData.item.id);
+  useEffect(() => {
+    async function fetchFavorite() {
+      const user = await getCurrentUser();
+      let userFavoriteTutorialsList = [];
+      await getAllUserTutorialsByType(user, types.favorite)
+        .then((tutorials) => {
+          const userTutorialList = tutorials.val();
+          const keys = Object.keys(userTutorialList);
+          keys.forEach((key) => {
+            userFavoriteTutorialsList.push({
+              id: userTutorialList[key].tutorial_id,
+              userFavoriteTutorialId: key,
+            });
+          });
+        })
+        .catch((_e) => {
+          userFavoriteTutorialsList = [];
+        });
+      dispatch(setFavorite({ ids: userFavoriteTutorialsList }));
+    }
+    fetchFavorite();
+  }, [dispatch]);
 
-    const changeFavoriteHandler = () => {
+  useEffect(() => {
+    async function fetchInProgress() {
+      const user = await getCurrentUser();
+      let userInProgressTutorialsList = [];
+      await getAllUserTutorialsByType(user, types.in_progress)
+        .then((tutorials) => {
+          const userTutorialList = tutorials.val();
+          const keys = Object.keys(userTutorialList);
+          keys.forEach((key) => {
+            userInProgressTutorialsList.push({
+              id: userTutorialList[key].tutorial_id,
+              userInProgressTutorialId: key,
+            });
+          });
+        })
+        .catch((_e) => {
+          userInProgressTutorialsList = [];
+        });
+      dispatch(setTutorialsInProgress({ ids: userInProgressTutorialsList }));
+    }
+    fetchInProgress();
+  }, [dispatch]);
+
+  useEffect(() => {
+    async function fetchLearned() {
+      const user = await getCurrentUser();
+      let userLearnedTutorialsList = [];
+      await getAllUserTutorialsByType(user, types.learned)
+        .then((tutorials) => {
+          const userTutorialList = tutorials.val();
+          const keys = Object.keys(userTutorialList);
+          keys.forEach((key) => {
+            userLearnedTutorialsList.push({
+              id: userTutorialList[key].tutorial_id,
+              userLearnedTutorialId: key,
+            });
+          });
+        })
+        .catch((_e) => {
+          userLearnedTutorialsList = [];
+        });
+      dispatch(setTutorialsLearned({ ids: userLearnedTutorialsList }));
+    }
+    fetchLearned();
+  }, [dispatch]);
+
+  const trickItems = (itemData) => {
+    const tutorialIsFavorite = !!userFavoriteTutorials.find(
+      (favorite) => favorite.id === itemData.item.id
+    );
+
+    const changeFavoriteHandler = async () => {
       if (tutorialIsFavorite) {
-        // favoriteMealsCtx.removeFavorite(mealId);
+        const selectedTutorial = userFavoriteTutorials.find(
+          (favorite) => favorite.id === itemData.item.id
+        );
+        await deleteTutorialFromCurrentUser(
+          selectedTutorial.userFavoriteTutorialId,
+          types.favorite
+        );
         dispatch(removeFavorite({ id: itemData.item.id }));
       } else {
-        // favoriteMealsCtx.addFavorite(mealId);
-        dispatch(addFavorite({ id: itemData.item.id }));
+        const key = await addTutorialToCurrentUser(itemData.item.id, types.favorite).then((r) => r);
+        dispatch(
+          addFavorite({
+            id: { id: itemData.item.id, userFavoriteTutorialId: key.toString().split('/').pop() },
+          })
+        );
       }
     };
+
+    if (screenLoading) {
+      return <Spinner deps={[]} />;
+    }
 
     return (
       <View style={styles.tutorialItemContainer}>
@@ -75,7 +176,7 @@ function TutorialsScreen() {
           android_ripple={{ color: colors.secondary700 }}
           style={styles.tutorialItemPressable}
           onPress={() => {
-            // navigation.navigate('SkateparkDetails', { skateparkId: itemData.item.skatepark_id });
+            navigation.navigate('TutorialDetailsScreen', { tutorial: itemData.item });
           }}
         >
           {/* Favorite Icon view */}
@@ -90,9 +191,11 @@ function TutorialsScreen() {
           </View>
 
           {/* Tutorial item level view */}
-          <View style={styles.tutorialLevelContainer}>
-            <Text style={styles.tutorialLevelText}>{itemData.item.level.toUpperCase()}</Text>
-          </View>
+          {itemData.item.level && (
+            <View style={styles.tutorialLevelContainer}>
+              <Text style={styles.tutorialLevelText}>{itemData.item.level.toUpperCase()}</Text>
+            </View>
+          )}
 
           {/* Tutorial item title view */}
           <View style={{ marginLeft: 8 }}>
@@ -142,6 +245,8 @@ function TutorialsScreen() {
           onPress={() => {
             setLearnTricksActive(true);
             setLearnBuildActive(false);
+            setSelectedFilter('All');
+            dispatch(setTutorialDisplayData({ displayTutorials: trickTutorials }));
           }}
         />
         <TabButton
@@ -152,6 +257,8 @@ function TutorialsScreen() {
           onPress={() => {
             setLearnTricksActive(false);
             setLearnBuildActive(true);
+            setSelectedFilter('All');
+            dispatch(setTutorialDisplayData({ displayTutorials: buildTutorials }));
           }}
         />
       </View>
@@ -196,6 +303,11 @@ function TutorialsScreen() {
           buttonTextStyle={styles.cancelButtonText}
           onPress={() => {
             setSelectedFilter('All');
+            dispatch(
+              setTutorialDisplayData({
+                displayTutorials: learnTricksActive ? trickTutorials : buildTutorials,
+              })
+            );
           }}
         />
         <SmallButton
@@ -210,22 +322,46 @@ function TutorialsScreen() {
           buttonTextStyle={styles.cancelButtonText}
           onPress={() => {
             setSelectedFilter('Favorite');
+            dispatch(
+              setTutorialDisplayData({
+                displayTutorials: learnTricksActive
+                  ? trickTutorials.filter((trick) =>
+                      userFavoriteTutorials.find((favorite) => favorite.id === trick.id)
+                    )
+                  : buildTutorials.filter((trick) =>
+                      userFavoriteTutorials.find((favorite) => favorite.id === trick.id)
+                    ),
+              })
+            );
           }}
         />
-        <SmallButton
-          buttonTitle="In Progress"
-          rippleColor={colors.whiteDefault}
-          style={
-            selectedFilter === 'In Progress'
-              ? { backgroundColor: colors.secondary500, height: 40 }
-              : { backgroundColor: colors.backDrop, height: 40 }
-          }
-          outerContainerStyle={{ height: 40 }}
-          buttonTextStyle={styles.cancelButtonText}
-          onPress={() => {
-            setSelectedFilter('In Progress');
-          }}
-        />
+        {learnTricksActive && (
+          <SmallButton
+            buttonTitle="In Progress"
+            rippleColor={colors.whiteDefault}
+            style={
+              selectedFilter === 'In Progress'
+                ? { backgroundColor: colors.secondary500, height: 40 }
+                : { backgroundColor: colors.backDrop, height: 40 }
+            }
+            outerContainerStyle={{ height: 40 }}
+            buttonTextStyle={styles.cancelButtonText}
+            onPress={() => {
+              setSelectedFilter('In Progress');
+              dispatch(
+                setTutorialDisplayData({
+                  displayTutorials: learnTricksActive
+                    ? trickTutorials.filter((trick) =>
+                        userTutorialsInProgress.find((tutorial) => tutorial.id === trick.id)
+                      )
+                    : buildTutorials.filter((trick) =>
+                        userTutorialsInProgress.find((tutorial) => tutorial.id === trick.id)
+                      ),
+                })
+              );
+            }}
+          />
+        )}
       </View>
 
       {/* Trick tutorials list view */}

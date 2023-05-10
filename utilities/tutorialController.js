@@ -55,8 +55,16 @@ export async function updateTutorial(type, id, data) {
 export async function addTutorialToCurrentUser(id, type) {
   const user = await getCurrentUser();
   if (user) {
-    await push(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_tutorials/`), {
+    return push(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_tutorials/`), {
       tutorial_id: id,
     });
+  }
+  return false;
+}
+
+export async function deleteTutorialFromCurrentUser(id, type) {
+  const user = await getCurrentUser();
+  if (user) {
+    await remove(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_tutorials/${id}`));
   }
 }

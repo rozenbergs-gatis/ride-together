@@ -4,9 +4,10 @@ import { TextInput } from 'react-native-paper';
 import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import colors from '../../constants/colors';
+import types from '../../constants/tutorialTypes';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import PrimaryButton from '../../components/PrimaryButton';
-import { deleteUserTutorial, getAllUserCreatedTutorials } from '../../utilities/userController';
+import { deleteUserTutorial, getAllUserTutorialsByType } from '../../utilities/userController';
 import { getCurrentUser } from '../../utilities/authController';
 import { deleteTutorial, getTutorial } from '../../utilities/tutorialController';
 import Spinner from '../../components/Spinner';
@@ -38,7 +39,7 @@ function CreatorsSpaceScreen({ navigation }) {
       setBuildTutorialsActive(false);
       const user = await getCurrentUser();
       let userTutorialIds = [];
-      await getAllUserCreatedTutorials(user, type)
+      await getAllUserTutorialsByType(user, type)
         .then((userTutorials) => {
           const userTutorialList = userTutorials.val();
           const keys = Object.keys(userTutorialList);
@@ -46,14 +47,13 @@ function CreatorsSpaceScreen({ navigation }) {
             userTutorialIds.push({ id: userTutorialList[key].tutorial_id, userTutorialId: key });
           });
         })
-        // eslint-disable-next-line no-unused-vars
         .catch((_e) => {
           userTutorialIds = [];
         });
       if (userTutorialIds.length > 0) {
         Promise.all(userTutorialIds.map((tutorialIds) => getTutorial(tutorialIds, type))).then(
           (resp) => {
-            if (type === 'trick') {
+            if (type === types.trick) {
               dispatch(setUserTrickTutorials({ userTrickTutorials: resp }));
               dispatch(setTutorialDisplayData({ displayTutorials: resp }));
             } else {
@@ -66,8 +66,8 @@ function CreatorsSpaceScreen({ navigation }) {
       dispatch(setRefreshData({ refreshData: false }));
     }
 
-    fetchTutorials('trick');
-    fetchTutorials('build');
+    fetchTutorials(types.trick);
+    fetchTutorials(types.build);
   }, [dispatch, reloadData]);
 
   const firstUpdate = useRef(true);

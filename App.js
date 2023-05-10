@@ -20,6 +20,7 @@ import CreatorsSpaceScreen from './screens/creatorsSpaceScreens/CreatorsSpaceScr
 import AddNewTutorialScreen from './screens/creatorsSpaceScreens/AddNewTutorialScreen';
 import Spinner from './components/Spinner';
 import TutorialsScreen from './screens/tutorialsScreens/TutorialsScreen';
+import TutorialDetailsScreen from './screens/tutorialsScreens/TutorialDetailsScreen';
 
 // AppRegistry.registerComponent('main', () => App);
 const Stack = createNativeStackNavigator();
@@ -240,6 +241,14 @@ function AuthenticatedStack() {
         options={{
           headerShown: true,
           headerTitle: 'Skatepark',
+        }}
+      />
+      <Stack.Screen
+        name="TutorialDetailsScreen"
+        component={TutorialDetailsScreen}
+        options={{
+          headerShown: true,
+          headerTitle: 'Tutorial',
         }}
       />
     </Stack.Navigator>
