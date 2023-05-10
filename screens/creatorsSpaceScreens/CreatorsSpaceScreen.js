@@ -4,9 +4,10 @@ import { TextInput } from 'react-native-paper';
 import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import colors from '../../constants/colors';
+import types from '../../constants/tutorialTypes';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import PrimaryButton from '../../components/PrimaryButton';
-import { deleteUserTutorial, getAllUserCreatedTutorials } from '../../utilities/userController';
+import { deleteUserTutorial, getAllUserTutorialsByType } from '../../utilities/userController';
 import { getCurrentUser } from '../../utilities/authController';
 import { deleteTutorial, getTutorial } from '../../utilities/tutorialController';
 import Spinner from '../../components/Spinner';
@@ -38,7 +39,7 @@ function CreatorsSpaceScreen({ navigation }) {
       setBuildTutorialsActive(false);
       const user = await getCurrentUser();
       let userTutorialIds = [];
-      await getAllUserCreatedTutorials(user, type)
+      await getAllUserTutorialsByType(user, type)
         .then((userTutorials) => {
           const userTutorialList = userTutorials.val();
           const keys = Object.keys(userTutorialList);
@@ -46,14 +47,13 @@ function CreatorsSpaceScreen({ navigation }) {
             userTutorialIds.push({ id: userTutorialList[key].tutorial_id, userTutorialId: key });
           });
         })
-        // eslint-disable-next-line no-unused-vars
         .catch((_e) => {
           userTutorialIds = [];
         });
       if (userTutorialIds.length > 0) {
         Promise.all(userTutorialIds.map((tutorialIds) => getTutorial(tutorialIds, type))).then(
           (resp) => {
-            if (type === 'trick') {
+            if (type === types.trick) {
               dispatch(setUserTrickTutorials({ userTrickTutorials: resp }));
               dispatch(setTutorialDisplayData({ displayTutorials: resp }));
             } else {
@@ -66,8 +66,8 @@ function CreatorsSpaceScreen({ navigation }) {
       dispatch(setRefreshData({ refreshData: false }));
     }
 
-    fetchTutorials('trick');
-    fetchTutorials('build');
+    fetchTutorials(types.trick);
+    fetchTutorials(types.build);
   }, [dispatch, reloadData]);
 
   const firstUpdate = useRef(true);
@@ -92,47 +92,53 @@ function CreatorsSpaceScreen({ navigation }) {
 
   const myTutorials = (itemData) => (
     <View style={styles.tutorialContainer}>
-      <Pressable
-        style={styles.deleteActionButton}
-        onPress={() => {
-          Alert.alert(
-            'Delete tutorial',
-            `Are you sure you want to delete tutorial with name ${itemData.item.title}?`,
-            [
-              {
-                text: 'No',
-                onPress: () => {},
-                style: 'cancel',
-              },
-              {
-                text: 'Yes',
-                onPress: async () => {
-                  await deleteUserTutorial(
-                    await getCurrentUser(),
-                    itemData.item.type,
-                    itemData.item.userTutorialId
-                  );
-                  await deleteTutorial(itemData.item.type.toLowerCase(), itemData.item.id);
-                  await deleteTutorialVideo(itemData.item.video_url);
-                  dispatch(setRefreshData({ refreshData: true }));
-                  setSearchInput('');
+      <View style={{ flexShrink: 1 }}>
+        <Pressable
+          style={styles.deleteActionButton}
+          onPress={() => {
+            Alert.alert(
+              'Delete tutorial',
+              `Are you sure you want to delete tutorial with name ${itemData.item.title}?`,
+              [
+                {
+                  text: 'No',
+                  onPress: () => {},
+                  style: 'cancel',
                 },
-              },
-            ]
-          );
-        }}
-      >
-        <AntDesign name="closecircle" size={36} color={colors.secondary500} />
-      </Pressable>
-      <Text style={styles.tutorialText}>{itemData.item.title}</Text>
-      <Pressable
-        style={styles.editActionButton}
-        onPress={() => {
-          navigation.navigate('EditTutorial', itemData.item);
-        }}
-      >
-        <FontAwesome5 name="edit" size={36} color={colors.secondary500} />
-      </Pressable>
+                {
+                  text: 'Yes',
+                  onPress: async () => {
+                    await deleteUserTutorial(
+                      await getCurrentUser(),
+                      itemData.item.type,
+                      itemData.item.userTutorialId
+                    );
+                    await deleteTutorial(itemData.item.type.toLowerCase(), itemData.item.id);
+                    await deleteTutorialVideo(itemData.item.video_url);
+                    dispatch(setRefreshData({ refreshData: true }));
+                    setSearchInput('');
+                  },
+                },
+              ]
+            );
+          }}
+        >
+          <AntDesign name="closecircle" size={36} color={colors.secondary500} />
+        </Pressable>
+      </View>
+      <View style={{ flex: 1, alignItems: 'center' }}>
+        <Text style={styles.tutorialText}>{itemData.item.title}</Text>
+      </View>
+      <View style={{ flexShrink: 1 }}>
+        <Pressable
+          style={styles.editActionButton}
+          onPress={() => {
+            navigation.navigate('EditTutorial', itemData.item);
+          }}
+        >
+          <FontAwesome5 name="edit" size={36} color={colors.secondary500} />
+        </Pressable>
+      </View>
     </View>
   );
 

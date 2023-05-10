@@ -247,7 +247,7 @@ function AddNewTutorialScreen({ navigation, route }) {
           style={[styles.input, styles.inputMultiline]}
           value={inputDescription}
           multiline
-          maxLength={250}
+          maxLength={1000}
           onChangeText={(enteredValue) => {
             setInputDescription(enteredValue);
           }}
@@ -268,18 +268,6 @@ function AddNewTutorialScreen({ navigation, route }) {
           onPress={selectVideo}
           disabled={!tutorialData && !!selectedVideo}
         />
-        {/* <Video */}
-        {/*    ref={video} */}
-        {/*    style={{width: 150, height: 150}} */}
-        {/*    source={{ */}
-        {/*        uri: 'https://firebasestorage.googleapis.com/v0/b/ride-together-f8d4e.appspot.com/o/tutorials%2F420bf8db-615b-4fb0-a921-08b280d4e0b3.mp4?alt=media', */}
-        {/*    }} */}
-        {/*    useNativeControls */}
-        {/*    shouldPlay */}
-        {/*    resizeMode={ResizeMode.COVER} */}
-        {/*    isLooping */}
-        {/*    onPlaybackStatusUpdate={status => setStatus(() => status)} */}
-        {/* /> */}
         {selectedVideo && (
           <View style={styles.videoContainer}>
             <Video

@@ -9,6 +9,12 @@ export async function getTutorial(ids, type) {
   }));
 }
 
+export async function getAllTutorials(type) {
+  return get(ref(database, `${type.toLowerCase()}_tutorials/`)).then((snapshot) =>
+    Object.entries(snapshot.val()).map(([id, obj]) => ({ id, ...obj }))
+  );
+}
+
 export async function addTrickTutorial(data) {
   const user = await getCurrentUser();
   if (user) {
@@ -49,8 +55,16 @@ export async function updateTutorial(type, id, data) {
 export async function addTutorialToCurrentUser(id, type) {
   const user = await getCurrentUser();
   if (user) {
-    await push(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_tutorials/`), {
+    return push(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_tutorials/`), {
       tutorial_id: id,
     });
+  }
+  return false;
+}
+
+export async function deleteTutorialFromCurrentUser(id, type) {
+  const user = await getCurrentUser();
+  if (user) {
+    await remove(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_tutorials/${id}`));
   }
 }
