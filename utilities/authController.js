@@ -3,17 +3,27 @@ import {
   signOut,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  deleteUser,
 } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { firebaseAuth } from '../firebase/firebaseConfig';
-import { addUserToDb } from './userController';
+import { addUsername, addUserToDb, updateUsername } from './userController';
 
 export async function authenticate(email, password) {
   return signInWithEmailAndPassword(firebaseAuth, email, password);
 }
 
-export async function register(email, password) {
+export async function register(email, password, username) {
   const user = await createUserWithEmailAndPassword(firebaseAuth, email, password);
+  try {
+    await addUsername(username, user.user.uid);
+  } catch (error) {
+    await deleteUser(user.user);
+    const newError = new Error('Username already exists!');
+    newError.code = 'username-already-in-use';
+    throw newError;
+  }
+  await updateUsername(user.user, username);
   await addUserToDb(user.user);
 }
 

@@ -7,6 +7,7 @@ import colors from '../../constants/colors';
 
 function RegisterScreen({ navigation }) {
   const [inputEmail, setInputEmail] = useState('');
+  const [inputUsername, setInputUsername] = useState('');
   const [inputPassword, setInputPassword] = useState('');
   const [inputRepeatPassword, setInputRepeatPassword] = useState('');
 
@@ -20,11 +21,12 @@ function RegisterScreen({ navigation }) {
   const registerFormHandler = async () => {
     if (inputPassword === inputRepeatPassword) {
       try {
-        await register(inputEmail, inputPassword);
+        await register(inputEmail, inputPassword, inputUsername);
         dispatch(resetState({}));
         navigation.replace('LoginScreen');
       } catch (exception) {
         dispatch(resetState({}));
+        console.log(exception.code);
         switch (exception.code) {
           case 'auth/invalid-email':
             dispatch(setEmail({ email: false }));
@@ -37,9 +39,10 @@ function RegisterScreen({ navigation }) {
           case 'auth/weak-password':
             dispatch(setPassword({ password: false }));
             break;
+          case 'username-already-in-use':
+            Alert.alert('Username is already in use', 'Please try another username');
+            break;
           default:
-            console.log(exception.code);
-            console.log(exception.message);
             Alert.alert('Unknown Error', 'Please try again later!');
         }
       }
@@ -63,6 +66,19 @@ function RegisterScreen({ navigation }) {
             value={inputEmail}
             onChangeText={(enteredValue) => {
               setInputEmail(enteredValue);
+            }}
+            autoCapitalize="none"
+          />
+          {!emailValid && <Text style={styles.textError}>{emailErrorText}</Text>}
+        </View>
+        <View style={styles.inputContainer}>
+          <TextInput
+            placeholder="Username"
+            placeholderTextColor={colors.placeholderDefault}
+            style={[styles.input, !emailValid && styles.error]}
+            value={inputUsername}
+            onChangeText={(enteredValue) => {
+              setInputUsername(enteredValue);
             }}
             autoCapitalize="none"
           />

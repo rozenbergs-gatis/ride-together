@@ -19,6 +19,7 @@ export async function addTrickTutorial(data) {
   const user = await getCurrentUser();
   if (user) {
     return push(ref(database, 'trick_tutorials/'), {
+      created_by: data.createdBy,
       title: data.title,
       timestamp: Date.now(),
       type: data.type,
@@ -34,6 +35,7 @@ export async function addBuildTutorial(data) {
   const user = await getCurrentUser();
   if (user) {
     return push(ref(database, 'build_tutorials/'), {
+      created_by: data.createdBy,
       title: data.title,
       timestamp: Date.now(),
       type: data.type,
