@@ -1,11 +1,22 @@
-import { ref, set, get, remove } from 'firebase/database';
+import { ref, set, get, remove, update } from 'firebase/database';
+import { updateProfile } from 'firebase/auth';
 import { database } from '../firebase/firebaseConfig';
 
 export async function addUserToDb(user) {
   await set(ref(database, `users/${user.uid}`), {
-    username: 'test user',
+    username: user.displayName,
     email: user.email,
     profile_picture: null,
+  });
+}
+
+export async function updateUsername(user, username) {
+  await updateProfile(user, { displayName: username });
+}
+
+export async function addUsername(username, id) {
+  return update(ref(database, `usernames/`), {
+    [username]: id,
   });
 }
 
@@ -16,6 +27,10 @@ export async function getAllUserTutorialsByType(user, type) {
   // await get(query(ref(database, `users/${user.uid}/my_tutorials/`), orderByChild('tutorial_id'))).then((data) => {
   //         console.log(data);
   //     })
+}
+
+export async function getUserUsername(userId) {
+  return get(ref(database, `users/${userId}/username`)).then((snapshot) => snapshot.val());
 }
 
 export async function deleteUserTutorial(user, type, tutorialId) {

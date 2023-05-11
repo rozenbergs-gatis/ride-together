@@ -19,6 +19,7 @@ import {
 } from '../../utilities/tutorialController';
 import Spinner from '../../components/Spinner';
 import { setRefreshData, setTutorialDisplayData } from '../../store/tutorialStates/userTutorials';
+import { getCurrentUser } from '../../utilities/authController';
 
 function AddNewTutorialScreen({ navigation, route }) {
   const [inputTitle, setInputTitle] = useState('');
@@ -69,6 +70,7 @@ function AddNewTutorialScreen({ navigation, route }) {
       setUploading(true);
       const videoUrl = await uploadTutorialVideo(selectedVideo.uri);
       const data = {
+        createdBy: (await getCurrentUser()).uid,
         title: inputTitle,
         type: selectedType,
         description: inputDescription,

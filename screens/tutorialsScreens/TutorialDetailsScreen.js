@@ -1,6 +1,6 @@
 import React, { Alert, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useLayoutEffect, useRef, useState } from 'react';
-import { Ionicons } from '@expo/vector-icons';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { ResizeMode, Video } from 'expo-av';
 import colors from '../../constants/colors';
@@ -17,9 +17,11 @@ import {
   addTutorialToCurrentUser,
   deleteTutorialFromCurrentUser,
 } from '../../utilities/tutorialController';
+import { getUserUsername } from '../../utilities/userController';
 
 function TutorialDetailsScreen({ navigation, route }) {
   const tutorialData = route.params.tutorial;
+  const [username, setUsername] = useState('');
   const userFavoriteTutorials = useSelector((state) => state.userFavoriteTutorials.favoriteIds);
   const userTutorialsInProgress = useSelector(
     (state) => state.userFavoriteTutorials.tutorialsInProgress
@@ -76,6 +78,14 @@ function TutorialDetailsScreen({ navigation, route }) {
     });
   }, [dispatch, navigation, tutorialData.id, tutorialIsFavorite, userFavoriteTutorials]);
 
+  useEffect(() => {
+    async function fetchUsername() {
+      const currentUsername = await getUserUsername(tutorialData.created_by);
+      setUsername(currentUsername);
+    }
+    fetchUsername();
+  }, [tutorialData.created_by]);
+
   return (
     <SafeAreaView style={styles.root}>
       <ScrollView nestedScrollEnabled>
@@ -101,9 +111,12 @@ function TutorialDetailsScreen({ navigation, route }) {
               backgroundColor: colors.secondary900,
               borderTopLeftRadius: 16,
               borderTopRightRadius: 16,
+              flexDirection: 'row',
+              alignItems: 'center',
             }}
           >
-            <Text style={styles.difficultyText}>User</Text>
+            <FontAwesome name="user-circle-o" size={36} color="white" style={{ padding: 6 }} />
+            <Text style={styles.difficultyText}>{username}</Text>
           </View>
           <ScrollView nestedScrollEnabled>
             <View
