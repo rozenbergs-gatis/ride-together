@@ -21,6 +21,7 @@ import AddNewTutorialScreen from './screens/creatorsSpaceScreens/AddNewTutorialS
 import Spinner from './components/Spinner';
 import TutorialsScreen from './screens/tutorialsScreens/TutorialsScreen';
 import TutorialDetailsScreen from './screens/tutorialsScreens/TutorialDetailsScreen';
+import AddNewForumPostScreen from './screens/creatorsSpaceScreens/AddNewForumPostScreen';
 
 // AppRegistry.registerComponent('main', () => App);
 const Stack = createNativeStackNavigator();
@@ -73,6 +74,8 @@ function DrawerNavigator() {
         }}
         itemContainerStyle={{
           width: 130,
+          borderColor: colors.placeholderDefault,
+          borderBottomWidth: 1,
         }}
         renderRightIcon={() => (
           <Ionicons
@@ -169,6 +172,15 @@ function DrawerNavigator() {
         component={AddNewTutorialScreen}
         options={{
           title: 'Edit Tutorial',
+          drawerItemStyle: { display: 'none' },
+          // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+        }}
+      />
+      <Drawer.Screen
+        name="AddNewForumPost"
+        component={AddNewForumPostScreen}
+        options={{
+          title: 'Add New Post',
           drawerItemStyle: { display: 'none' },
           // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
         }}

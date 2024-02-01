@@ -29,10 +29,23 @@ export async function getAllUserTutorialsByType(user, type) {
   //     })
 }
 
+export async function getAllUserForumPostsByType(user, type) {
+  return get(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_forum_posts/`)).then(
+    (snapshot) => snapshot
+  );
+  // await get(query(ref(database, `users/${user.uid}/my_tutorials/`), orderByChild('tutorial_id'))).then((data) => {
+  //         console.log(data);
+  //     })
+}
+
 export async function getUserUsername(userId) {
   return get(ref(database, `users/${userId}/username`)).then((snapshot) => snapshot.val());
 }
 
 export async function deleteUserTutorial(user, type, tutorialId) {
   await remove(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_tutorials/${tutorialId}`));
+}
+
+export async function deleteUserForumPost(user, type, forumId) {
+  await remove(ref(database, `users/${user.uid}/my_${type.toLowerCase()}_forum_posts/${forumId}`));
 }

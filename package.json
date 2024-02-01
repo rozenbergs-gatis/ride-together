@@ -24,7 +24,7 @@
     "lottie-react-native": "^5.1.4",
     "react": "^18.2.0",
     "react-devtools": "^4.27.6",
-    "react-native": "0.71.7",
+    "react-native": "0.71.14",
     "react-native-element-dropdown": "^2.9.0",
     "react-native-paper": "^5.7.0",
     "react-native-ratings": "^8.1.0",

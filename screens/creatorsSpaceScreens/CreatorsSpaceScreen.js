@@ -4,33 +4,52 @@ import { TextInput } from 'react-native-paper';
 import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import colors from '../../constants/colors';
-import types from '../../constants/tutorialTypes';
+import { forumConstants, mediaConstants, tutorialConstants } from '../../constants/types';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import PrimaryButton from '../../components/PrimaryButton';
-import { deleteUserTutorial, getAllUserTutorialsByType } from '../../utilities/userController';
+import {
+  deleteUserForumPost,
+  deleteUserTutorial,
+  getAllUserForumPostsByType,
+  getAllUserTutorialsByType,
+} from '../../utilities/userController';
 import { getCurrentUser } from '../../utilities/authController';
 import { deleteTutorial, getTutorial } from '../../utilities/tutorialController';
 import Spinner from '../../components/Spinner';
-import { deleteTutorialVideo } from '../../utilities/fileController';
+import { deleteMedia, uploadMedia } from '../../utilities/fileController';
 import {
   setRefreshData,
   setTutorialDisplayData,
   setUserBuildTutorials,
   setUserTrickTutorials,
 } from '../../store/tutorialStates/userTutorials';
+import {
+  setPostsDisplayData,
+  setRefreshPostData,
+  setUserDiscussionsPosts,
+  setUserMarketPosts,
+} from '../../store/forumStates/userForumPosts';
+import { deleteForumPost, getForumPost } from '../../utilities/forumController';
 
 function CreatorsSpaceScreen({ navigation }) {
   const [screenLoading, setScreenLoading] = useState(true);
   const [myTutorialsActive, setMyTutorialsActive] = useState(true);
-  const [myForumsActive, setMyForumsActive] = useState(false);
   const [trickTutorialsActive, setTrickTutorialsActive] = useState(true);
   const [buildTutorialsActive, setBuildTutorialsActive] = useState(false);
+  const [myForumsActive, setMyForumsActive] = useState(false);
+  const [myDiscussionsPostsActive, setMyDiscussionsPostsActive] = useState(true);
+  const [myMarketPostsActive, setMyMarketPostsActive] = useState(false);
   const [searchInput, setSearchInput] = useState('');
 
   const userTrickTutorials = useSelector((state) => state.userTutorials.userTrickTutorials);
   const userBuildTutorials = useSelector((state) => state.userTutorials.userBuildTutorials);
   const displayTutorials = useSelector((state) => state.userTutorials.displayTutorials);
   const reloadData = useSelector((state) => state.userTutorials.refreshData);
+
+  const userDiscussionsPosts = useSelector((state) => state.userForumPosts.userDiscussionsPosts);
+  const userMarketPosts = useSelector((state) => state.userForumPosts.userMarketPosts);
+  const displayPosts = useSelector((state) => state.userForumPosts.displayPosts);
+  const refreshPostData = useSelector((state) => state.userForumPosts.refreshPostData);
   const dispatch = useDispatch();
 
   useEffect(() => {
@@ -53,7 +72,7 @@ function CreatorsSpaceScreen({ navigation }) {
       if (userTutorialIds.length > 0) {
         Promise.all(userTutorialIds.map((tutorialIds) => getTutorial(tutorialIds, type))).then(
           (resp) => {
-            if (type === types.trick) {
+            if (type === tutorialConstants.trick) {
               dispatch(setUserTrickTutorials({ userTrickTutorials: resp }));
               dispatch(setTutorialDisplayData({ displayTutorials: resp }));
             } else {
@@ -66,9 +85,44 @@ function CreatorsSpaceScreen({ navigation }) {
       dispatch(setRefreshData({ refreshData: false }));
     }
 
-    fetchTutorials(types.trick);
-    fetchTutorials(types.build);
+    fetchTutorials(tutorialConstants.trick);
+    fetchTutorials(tutorialConstants.build);
   }, [dispatch, reloadData]);
+
+  useEffect(() => {
+    async function fetchForumPosts(type) {
+      setMyDiscussionsPostsActive(true);
+      setMyMarketPostsActive(false);
+      const user = await getCurrentUser();
+      let userPostIds = [];
+      await getAllUserForumPostsByType(user, type)
+        .then((userPosts) => {
+          const userPostList = userPosts.val();
+          const keys = Object.keys(userPostList);
+          keys.forEach((key) => {
+            userPostIds.push({ id: userPostList[key].tutorial_id, userForumPostId: key });
+          });
+        })
+        .catch((_e) => {
+          userPostIds = [];
+        });
+      if (userPostIds.length > 0) {
+        Promise.all(userPostIds.map((postIds) => getForumPost(postIds, type))).then((resp) => {
+          if (type === forumConstants.discussions) {
+            dispatch(setUserDiscussionsPosts({ userDiscussionsPosts: resp }));
+            dispatch(setPostsDisplayData({ displayPosts: resp }));
+          } else {
+            dispatch(setUserMarketPosts({ userMarketPosts: resp }));
+          }
+        });
+      }
+      setScreenLoading(false);
+      dispatch(setRefreshPostData({ refreshPostData: false }));
+    }
+
+    fetchForumPosts(forumConstants.discussions);
+    fetchForumPosts(forumConstants.market);
+  }, [dispatch, refreshPostData]);
 
   const firstUpdate = useRef(true);
   useLayoutEffect(() => {
@@ -114,7 +168,7 @@ function CreatorsSpaceScreen({ navigation }) {
                       itemData.item.userTutorialId
                     );
                     await deleteTutorial(itemData.item.type.toLowerCase(), itemData.item.id);
-                    await deleteTutorialVideo(itemData.item.video_url);
+                    await deleteMedia(mediaConstants.tutorials, itemData.item.video_url);
                     dispatch(setRefreshData({ refreshData: true }));
                     setSearchInput('');
                   },
@@ -144,7 +198,65 @@ function CreatorsSpaceScreen({ navigation }) {
 
   // TODO Implement MyForums page tab
   // eslint-disable-next-line no-unused-vars
-  function myForums() {}
+  const myForums = (itemData) => (
+    <View style={styles.tutorialContainer}>
+      <View style={{ flexShrink: 1 }}>
+        <Pressable
+          style={styles.deleteActionButton}
+          onPress={() => {
+            Alert.alert(
+              'Delete Forum Post',
+              `Are you sure you want to delete post with name ${itemData.item.title}?`,
+              [
+                {
+                  text: 'No',
+                  onPress: () => {},
+                  style: 'cancel',
+                },
+                {
+                  text: 'Yes',
+                  onPress: async () => {
+                    console.log(itemData);
+                    await deleteUserForumPost(
+                      await getCurrentUser(),
+                      itemData.item.forum_type,
+                      itemData.item.userForumPostId
+                    );
+                    await deleteForumPost(itemData.item.forum_type.toLowerCase(), itemData.item.id);
+
+                    const promises = [];
+                    itemData.item.media_urls.forEach((url) => {
+                      const media = deleteMedia(mediaConstants.forums, url);
+                      promises.push(media);
+                    });
+
+                    await Promise.all(promises);
+                    dispatch(setRefreshPostData({ refreshPostData: true }));
+                    setSearchInput('');
+                  },
+                },
+              ]
+            );
+          }}
+        >
+          <AntDesign name="closecircle" size={36} color={colors.secondary500} />
+        </Pressable>
+      </View>
+      <View style={{ flex: 1, alignItems: 'center' }}>
+        <Text style={styles.tutorialText}>{itemData.item.title}</Text>
+      </View>
+      <View style={{ flexShrink: 1 }}>
+        <Pressable
+          style={styles.editActionButton}
+          onPress={() => {
+            navigation.navigate('EditTutorial', itemData.item);
+          }}
+        >
+          <FontAwesome5 name="edit" size={36} color={colors.secondary500} />
+        </Pressable>
+      </View>
+    </View>
+  );
 
   if (screenLoading) {
     return <Spinner deps={[]} />;
@@ -201,53 +313,77 @@ function CreatorsSpaceScreen({ navigation }) {
       <View style={styles.contentContainer}>
         <View style={styles.buttonsContainer}>
           <TabButton
-            buttonTitle="Tricks"
+            buttonTitle={myTutorialsActive ? 'Tricks' : 'Discussions'}
+            onPress={() => {
+              setSearchInput('');
+              if (myTutorialsActive) {
+                setTrickTutorialsActive(true);
+                setBuildTutorialsActive(false);
+                dispatch(setTutorialDisplayData({ displayTutorials: userTrickTutorials }));
+              } else {
+                setMyDiscussionsPostsActive(true);
+                setMyMarketPostsActive(false);
+                dispatch(setPostsDisplayData({ displayPosts: userDiscussionsPosts }));
+              }
+            }}
             style={{
               backgroundColor: colors.placeholderDefault,
               borderTopLeftRadius: 16,
               height: 50,
             }}
             rippleColor={colors.secondary500}
-            selectedContainerStyle={trickTutorialsActive && styles.selectedTutorialType}
-            onPress={() => {
-              setTrickTutorialsActive(true);
-              setBuildTutorialsActive(false);
-              setSearchInput('');
-              dispatch(setTutorialDisplayData({ displayTutorials: userTrickTutorials }));
-            }}
+            selectedContainerStyle={
+              ((myTutorialsActive && trickTutorialsActive) ||
+                (myForumsActive && myDiscussionsPostsActive)) &&
+              styles.selectedTutorialType
+            }
           />
           <TabButton
-            buttonTitle="Builds"
+            buttonTitle={myTutorialsActive ? 'Builds' : 'Market'}
             rippleColor={colors.secondary500}
             style={{
               backgroundColor: colors.placeholderDefault,
               borderTopRightRadius: 16,
               height: 50,
             }}
-            selectedContainerStyle={buildTutorialsActive && styles.selectedTutorialType}
+            selectedContainerStyle={
+              ((myTutorialsActive && buildTutorialsActive) ||
+                (myForumsActive && myMarketPostsActive)) &&
+              styles.selectedTutorialType
+            }
             onPress={async () => {
-              setTrickTutorialsActive(false);
-              setBuildTutorialsActive(true);
               setSearchInput('');
-              dispatch(setTutorialDisplayData({ displayTutorials: userBuildTutorials }));
+              if (myTutorialsActive) {
+                setTrickTutorialsActive(false);
+                setBuildTutorialsActive(true);
+                dispatch(setTutorialDisplayData({ displayTutorials: userBuildTutorials }));
+              } else {
+                setMyDiscussionsPostsActive(false);
+                setMyMarketPostsActive(true);
+                dispatch(setPostsDisplayData({ displayPosts: userMarketPosts }));
+              }
             }}
           />
         </View>
         <View style={styles.tutorialList}>
           <FlatList
-            data={displayTutorials}
-            renderItem={myTutorials}
+            data={myTutorialsActive ? displayTutorials : displayPosts}
+            renderItem={myTutorialsActive ? myTutorials : myForums}
             keyExtractor={(item) => item.id}
           />
         </View>
       </View>
       <View style={styles.addNewTutorial}>
         <PrimaryButton
-          buttonTitle="Add New Tutorial"
+          buttonTitle={myTutorialsActive ? 'Add New Tutorial' : 'Add New Post'}
           style={{ backgroundColor: colors.secondary500 }}
           rippleColor={colors.secondary400}
           onPress={() => {
-            navigation.navigate('AddNewTutorial');
+            if (myTutorialsActive) {
+              navigation.navigate('AddNewTutorial');
+            } else {
+              navigation.navigate('AddNewForumPost');
+            }
           }}
         />
       </View>
