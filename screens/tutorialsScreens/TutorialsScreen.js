@@ -6,7 +6,7 @@ import { ResizeMode, Video } from 'expo-av';
 import { FontAwesome5, Ionicons } from '@expo/vector-icons';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import colors from '../../constants/colors';
-import types from '../../constants/tutorialTypes';
+import { tutorialConstants } from '../../constants/types';
 import SmallButton from '../../components/SmallButton';
 import {
   addTutorialToCurrentUser,
@@ -54,7 +54,7 @@ function TutorialsScreen({ navigation }) {
       setLearnBuildActive(false);
       await getAllTutorials(type)
         .then((tutorials) => {
-          if (type === types.trick) {
+          if (type === tutorialConstants.trick) {
             dispatch(setTrickTutorials({ trickTutorials: tutorials }));
             dispatch(setTutorialDisplayData({ displayTutorials: tutorials }));
           } else {
@@ -68,15 +68,15 @@ function TutorialsScreen({ navigation }) {
       dispatch(setRefreshData({ refreshData: false }));
     }
 
-    fetchTutorials(types.trick);
-    fetchTutorials(types.build);
+    fetchTutorials(tutorialConstants.trick);
+    fetchTutorials(tutorialConstants.build);
   }, [dispatch, reloadData]);
 
   useEffect(() => {
     async function fetchFavorite() {
       const user = await getCurrentUser();
       let userFavoriteTutorialsList = [];
-      await getAllUserTutorialsByType(user, types.favorite)
+      await getAllUserTutorialsByType(user, tutorialConstants.favorite)
         .then((tutorials) => {
           const userTutorialList = tutorials.val();
           const keys = Object.keys(userTutorialList);
@@ -99,7 +99,7 @@ function TutorialsScreen({ navigation }) {
     async function fetchInProgress() {
       const user = await getCurrentUser();
       let userInProgressTutorialsList = [];
-      await getAllUserTutorialsByType(user, types.in_progress)
+      await getAllUserTutorialsByType(user, tutorialConstants.in_progress)
         .then((tutorials) => {
           const userTutorialList = tutorials.val();
           const keys = Object.keys(userTutorialList);
@@ -122,7 +122,7 @@ function TutorialsScreen({ navigation }) {
     async function fetchLearned() {
       const user = await getCurrentUser();
       let userLearnedTutorialsList = [];
-      await getAllUserTutorialsByType(user, types.learned)
+      await getAllUserTutorialsByType(user, tutorialConstants.learned)
         .then((tutorials) => {
           const userTutorialList = tutorials.val();
           const keys = Object.keys(userTutorialList);
@@ -153,11 +153,14 @@ function TutorialsScreen({ navigation }) {
         );
         await deleteTutorialFromCurrentUser(
           selectedTutorial.userFavoriteTutorialId,
-          types.favorite
+          tutorialConstants.favorite
         );
         dispatch(removeFavorite({ id: itemData.item.id }));
       } else {
-        const key = await addTutorialToCurrentUser(itemData.item.id, types.favorite).then((r) => r);
+        const key = await addTutorialToCurrentUser(
+          itemData.item.id,
+          tutorialConstants.favorite
+        ).then((r) => r);
         dispatch(
           addFavorite({
             id: { id: itemData.item.id, userFavoriteTutorialId: key.toString().split('/').pop() },

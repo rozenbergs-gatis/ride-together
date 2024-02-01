@@ -4,7 +4,7 @@ import { Ionicons, FontAwesome } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { ResizeMode, Video } from 'expo-av';
 import colors from '../../constants/colors';
-import types from '../../constants/tutorialTypes';
+import { tutorialConstants } from '../../constants/types';
 import {
   addFavorite,
   addTutorialsInProgress,
@@ -48,11 +48,14 @@ function TutorialDetailsScreen({ navigation, route }) {
         );
         await deleteTutorialFromCurrentUser(
           selectedTutorial.userFavoriteTutorialId,
-          types.favorite
+          tutorialConstants.favorite
         );
         dispatch(removeFavorite({ id: tutorialData.id }));
       } else {
-        const key = await addTutorialToCurrentUser(tutorialData.id, types.favorite).then((r) => r);
+        const key = await addTutorialToCurrentUser(
+          tutorialData.id,
+          tutorialConstants.favorite
+        ).then((r) => r);
         dispatch(
           addFavorite({
             id: { id: tutorialData.id, userFavoriteTutorialId: key.toString().split('/').pop() },
@@ -181,14 +184,14 @@ function TutorialDetailsScreen({ navigation, route }) {
                           onPress: async () => {
                             const key = await addTutorialToCurrentUser(
                               tutorialData.id,
-                              types.learned
+                              tutorialConstants.learned
                             ).then((r) => r);
                             const selectedTutorial = userTutorialsInProgress.find(
                               (tutorial) => tutorial.id === tutorialData.id
                             );
                             await deleteTutorialFromCurrentUser(
                               selectedTutorial.userInProgressTutorialId,
-                              types.in_progress
+                              tutorialConstants.in_progress
                             );
                             dispatch(removeTutorialsInProgress({ id: tutorialData.id }));
                             dispatch(
@@ -227,7 +230,7 @@ function TutorialDetailsScreen({ navigation, route }) {
                   onPress={async () => {
                     const key = await addTutorialToCurrentUser(
                       tutorialData.id,
-                      types.in_progress
+                      tutorialConstants.in_progress
                     ).then((r) => r);
                     dispatch(
                       addTutorialsInProgress({

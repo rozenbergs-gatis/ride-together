@@ -10,7 +10,7 @@ import colors from '../../constants/colors';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import PrimaryButton from '../../components/PrimaryButton';
 import SmallButton from '../../components/SmallButton';
-import { deleteTutorialVideo, uploadTutorialVideo } from '../../utilities/fileController';
+import { deleteMedia, uploadMedia } from '../../utilities/fileController';
 import {
   addBuildTutorial,
   addTrickTutorial,
@@ -20,6 +20,7 @@ import {
 import Spinner from '../../components/Spinner';
 import { setRefreshData, setTutorialDisplayData } from '../../store/tutorialStates/userTutorials';
 import { getCurrentUser } from '../../utilities/authController';
+import { mediaConstants } from '../../constants/types';
 
 function AddNewTutorialScreen({ navigation, route }) {
   const [inputTitle, setInputTitle] = useState('');
@@ -68,7 +69,7 @@ function AddNewTutorialScreen({ navigation, route }) {
   async function saveAndPublish() {
     if (inputTitle !== '' && inputDescription !== '' && selectedVideo) {
       setUploading(true);
-      const videoUrl = await uploadTutorialVideo(selectedVideo.uri);
+      const videoUrl = await uploadMedia(mediaConstants.tutorials, selectedVideo.uri);
       const data = {
         createdBy: (await getCurrentUser()).uid,
         title: inputTitle,
@@ -96,8 +97,8 @@ function AddNewTutorialScreen({ navigation, route }) {
       setUploading(true);
       let videoUrl = selectedVideo.uri;
       if (tutorialData.video_url !== selectedVideo.uri) {
-        await deleteTutorialVideo(tutorialData.video_url);
-        videoUrl = await uploadTutorialVideo(selectedVideo.uri);
+        await deleteMedia(mediaConstants.tutorials, tutorialData.video_url);
+        videoUrl = await uploadMedia(mediaConstants.tutorials, selectedVideo.uri);
       }
       tutorialData.title = inputTitle;
       tutorialData.description = inputDescription;
