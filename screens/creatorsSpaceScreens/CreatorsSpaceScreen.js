@@ -1,6 +1,6 @@
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { TextInput } from 'react-native-paper';
+import { IconButton, TextInput } from 'react-native-paper';
 import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import colors from '../../constants/colors';
@@ -37,6 +37,8 @@ function CreatorsSpaceScreen({ navigation }) {
   const [trickTutorialsActive, setTrickTutorialsActive] = useState(true);
   const [buildTutorialsActive, setBuildTutorialsActive] = useState(false);
   const [myForumsActive, setMyForumsActive] = useState(false);
+  // const [myDiscussionsPostsActive, setMyDiscussionsPostsActive] = useState(!route.params.market);
+  // const [myMarketPostsActive, setMyMarketPostsActive] = useState(!!route.params.market);
   const [myDiscussionsPostsActive, setMyDiscussionsPostsActive] = useState(true);
   const [myMarketPostsActive, setMyMarketPostsActive] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -56,6 +58,7 @@ function CreatorsSpaceScreen({ navigation }) {
     async function fetchTutorials(type) {
       setTrickTutorialsActive(true);
       setBuildTutorialsActive(false);
+      setSearchInput('');
       const user = await getCurrentUser();
       let userTutorialIds = [];
       await getAllUserTutorialsByType(user, type)
@@ -80,6 +83,13 @@ function CreatorsSpaceScreen({ navigation }) {
             }
           }
         );
+      } else if (userTutorialIds.length === 0) {
+        if (type === tutorialConstants.trick) {
+          dispatch(setUserTrickTutorials({ userDiscussionsPosts: [] }));
+          dispatch(setTutorialDisplayData({ displayPosts: [] }));
+        } else {
+          dispatch(setUserBuildTutorials({ userMarketPosts: [] }));
+        }
       }
       setScreenLoading(false);
       dispatch(setRefreshData({ refreshData: false }));
@@ -91,8 +101,9 @@ function CreatorsSpaceScreen({ navigation }) {
 
   useEffect(() => {
     async function fetchForumPosts(type) {
-      setMyDiscussionsPostsActive(true);
-      setMyMarketPostsActive(false);
+      // setMyDiscussionsPostsActive(true);
+      // setMyMarketPostsActive(false);
+      setSearchInput('');
       const user = await getCurrentUser();
       let userPostIds = [];
       await getAllUserForumPostsByType(user, type)
@@ -110,11 +121,19 @@ function CreatorsSpaceScreen({ navigation }) {
         Promise.all(userPostIds.map((postIds) => getForumPost(postIds, type))).then((resp) => {
           if (type === forumConstants.discussions) {
             dispatch(setUserDiscussionsPosts({ userDiscussionsPosts: resp }));
-            dispatch(setPostsDisplayData({ displayPosts: resp }));
+            if (myDiscussionsPostsActive) dispatch(setPostsDisplayData({ displayPosts: resp }));
           } else {
             dispatch(setUserMarketPosts({ userMarketPosts: resp }));
+            if (myMarketPostsActive) dispatch(setPostsDisplayData({ displayPosts: resp }));
           }
         });
+      } else if (userPostIds.length === 0) {
+        if (type === forumConstants.discussions) {
+          dispatch(setUserDiscussionsPosts({ userDiscussionsPosts: [] }));
+          dispatch(setPostsDisplayData({ displayPosts: [] }));
+        } else {
+          dispatch(setUserMarketPosts({ userMarketPosts: [] }));
+        }
       }
       setScreenLoading(false);
       dispatch(setRefreshPostData({ refreshPostData: false }));
@@ -122,7 +141,7 @@ function CreatorsSpaceScreen({ navigation }) {
 
     fetchForumPosts(forumConstants.discussions);
     fetchForumPosts(forumConstants.market);
-  }, [dispatch, refreshPostData]);
+  }, [dispatch, myDiscussionsPostsActive, myMarketPostsActive, refreshPostData]);
 
   const firstUpdate = useRef(true);
   useLayoutEffect(() => {
@@ -132,11 +151,25 @@ function CreatorsSpaceScreen({ navigation }) {
     }
 
     const searchDelay = setTimeout(() => {
-      const filteredData = userTrickTutorials.filter((tutorial) =>
-        tutorial.title.toLowerCase().includes(searchInput.toLowerCase())
-      );
-      setSearchInput(searchInput);
-      dispatch(setTutorialDisplayData({ displayTutorials: filteredData }));
+      if (myTutorialsActive) {
+        const dataToFilter = trickTutorialsActive ? userTrickTutorials : userBuildTutorials;
+        if (!dataToFilter?.length) return;
+
+        const filteredData = dataToFilter.filter((tutorial) =>
+          tutorial.title.toLowerCase().includes(searchInput.toLowerCase())
+        );
+        setSearchInput(searchInput);
+        dispatch(setTutorialDisplayData({ displayTutorials: filteredData }));
+      } else {
+        const dataToFilter = myDiscussionsPostsActive ? userDiscussionsPosts : userMarketPosts;
+        if (!dataToFilter?.length) return;
+
+        const filteredData = dataToFilter.filter((tutorial) =>
+          tutorial.title.toLowerCase().includes(searchInput.toLowerCase())
+        );
+        setSearchInput(searchInput);
+        dispatch(setPostsDisplayData({ displayPosts: filteredData }));
+      }
     }, 1000);
 
     // eslint-disable-next-line consistent-return
@@ -196,7 +229,6 @@ function CreatorsSpaceScreen({ navigation }) {
     </View>
   );
 
-  // TODO Implement MyForums page tab
   // eslint-disable-next-line no-unused-vars
   const myForums = (itemData) => (
     <View style={styles.tutorialContainer}>
@@ -216,7 +248,6 @@ function CreatorsSpaceScreen({ navigation }) {
                 {
                   text: 'Yes',
                   onPress: async () => {
-                    console.log(itemData);
                     await deleteUserForumPost(
                       await getCurrentUser(),
                       itemData.item.forum_type,
@@ -224,13 +255,15 @@ function CreatorsSpaceScreen({ navigation }) {
                     );
                     await deleteForumPost(itemData.item.forum_type.toLowerCase(), itemData.item.id);
 
-                    const promises = [];
-                    itemData.item.media_urls.forEach((url) => {
-                      const media = deleteMedia(mediaConstants.forums, url);
-                      promises.push(media);
-                    });
+                    if (itemData.item.media_urls && itemData.item.media_urls?.length) {
+                      const promises = [];
+                      itemData.item.media_urls.forEach((url) => {
+                        const media = deleteMedia(mediaConstants.forums, url);
+                        promises.push(media);
+                      });
+                      await Promise.all(promises);
+                    }
 
-                    await Promise.all(promises);
                     dispatch(setRefreshPostData({ refreshPostData: true }));
                     setSearchInput('');
                   },
@@ -249,7 +282,7 @@ function CreatorsSpaceScreen({ navigation }) {
         <Pressable
           style={styles.editActionButton}
           onPress={() => {
-            navigation.navigate('EditTutorial', itemData.item);
+            navigation.navigate('EditForumPost', itemData.item);
           }}
         >
           <FontAwesome5 name="edit" size={36} color={colors.secondary500} />
@@ -273,6 +306,9 @@ function CreatorsSpaceScreen({ navigation }) {
           onPress={() => {
             setMyTutorialsActive(true);
             setMyForumsActive(false);
+            const activeData = trickTutorialsActive ? userTrickTutorials : userBuildTutorials;
+            dispatch(setTutorialDisplayData({ displayTutorials: activeData }));
+            setSearchInput('');
           }}
         />
         <TabButton
@@ -283,6 +319,9 @@ function CreatorsSpaceScreen({ navigation }) {
           onPress={() => {
             setMyTutorialsActive(false);
             setMyForumsActive(true);
+            const activeData = myDiscussionsPostsActive ? userDiscussionsPosts : userMarketPosts;
+            dispatch(setPostsDisplayData({ displayPosts: activeData }));
+            setSearchInput('');
           }}
         />
       </View>
@@ -306,6 +345,15 @@ function CreatorsSpaceScreen({ navigation }) {
               iconColor={colors.secondary500}
               size={36}
               style={styles.icon}
+            />
+          }
+          right={
+            <TextInput.Icon
+              icon="close"
+              iconColor={colors.secondary500}
+              size={36}
+              style={styles.icon}
+              onPress={() => setSearchInput('')}
             />
           }
         />

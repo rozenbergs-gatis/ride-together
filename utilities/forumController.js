@@ -1,4 +1,4 @@
-import { get, push, ref, remove } from 'firebase/database';
+import { get, push, ref, remove, update } from 'firebase/database';
 import { database } from '../firebase/firebaseConfig';
 import { getCurrentUser } from './authController';
 
@@ -33,16 +33,23 @@ export async function addDiscussionsPost(data) {
 export async function addMarketPost(data) {
   const user = await getCurrentUser();
   if (user) {
-    return push(ref(database, 'market_forum_posts/'), {
+    const payload = {
       created_by: data.createdBy,
       title: data.title,
       timestamp: Date.now(),
+      forum_type: data.forumType,
       type: data.type,
       description: data.description,
-      video_url: data.videoUrl,
-    });
+      media_urls: data.mediaUrls,
+    };
+    if (data.price) payload.price = data.price;
+    return push(ref(database, 'market_forum_posts/'), payload);
   }
   return false;
+}
+
+export async function updateForumPost(type, id, data) {
+  await update(ref(database, `${type.toLowerCase()}_forum_posts/${id}`), data);
 }
 
 export async function addForumPostToCurrentUser(id, type) {
