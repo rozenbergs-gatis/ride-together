@@ -6,6 +6,7 @@ import { AntDesign } from '@expo/vector-icons';
 import { useDispatch } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import { Snackbar } from 'react-native-paper';
+import _ from 'lodash';
 import colors from '../../constants/colors';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import PrimaryButton from '../../components/PrimaryButton';
@@ -94,19 +95,20 @@ function AddNewTutorialScreen({ navigation, route }) {
 
   async function saveChanges() {
     if (inputTitle !== '' && inputDescription !== '' && selectedVideo) {
+      const tutorialDataCopy = _.cloneDeep(tutorialData);
       setUploading(true);
       let videoUrl = selectedVideo.uri;
-      if (tutorialData.video_url !== selectedVideo.uri) {
-        await deleteMedia(mediaConstants.tutorials, tutorialData.video_url);
+      if (tutorialDataCopy.video_url !== selectedVideo.uri) {
+        await deleteMedia(mediaConstants.tutorials, tutorialDataCopy.video_url);
         videoUrl = await uploadMedia(mediaConstants.tutorials, selectedVideo.uri);
       }
-      tutorialData.title = inputTitle;
-      tutorialData.description = inputDescription;
-      if (tutorialData.level) tutorialData.level = selectedLevel;
-      tutorialData.video_url = videoUrl;
-      const tutorialId = tutorialData.id;
-      ['id', 'userTutorialId'].forEach((e) => delete tutorialData[e]);
-      await updateTutorial(selectedType, tutorialId, tutorialData);
+      tutorialDataCopy.title = inputTitle;
+      tutorialDataCopy.description = inputDescription;
+      if (tutorialDataCopy.level) tutorialDataCopy.level = selectedLevel;
+      tutorialDataCopy.video_url = videoUrl;
+      const tutorialId = tutorialDataCopy.id;
+      ['id', 'userTutorialId'].forEach((e) => delete tutorialDataCopy[e]);
+      await updateTutorial(selectedType, tutorialId, tutorialDataCopy);
 
       setUploading(false);
       dispatch(setTutorialDisplayData({ displayTutorials: [] }));

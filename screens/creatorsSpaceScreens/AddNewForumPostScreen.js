@@ -17,22 +17,22 @@ import { AntDesign } from '@expo/vector-icons';
 import { useDispatch } from 'react-redux';
 import { useFocusEffect } from '@react-navigation/native';
 import { Snackbar } from 'react-native-paper';
+import _ from 'lodash';
 import colors from '../../constants/colors';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import PrimaryButton from '../../components/PrimaryButton';
 import SmallButton from '../../components/SmallButton';
 import { deleteMedia, uploadMedia } from '../../utilities/fileController';
-import {
-  addBuildTutorial,
-  addTrickTutorial,
-  addTutorialToCurrentUser,
-  updateTutorial,
-} from '../../utilities/tutorialController';
 import Spinner from '../../components/Spinner';
-import { setRefreshData, setTutorialDisplayData } from '../../store/tutorialStates/userTutorials';
+import { setTutorialDisplayData } from '../../store/tutorialStates/userTutorials';
 import { getCurrentUser } from '../../utilities/authController';
 import { mediaConstants } from '../../constants/types';
-import { addDiscussionsPost, addForumPostToCurrentUser } from '../../utilities/forumController';
+import {
+  addDiscussionsPost,
+  addForumPostToCurrentUser,
+  addMarketPost,
+  updateForumPost,
+} from '../../utilities/forumController';
 import { setRefreshPostData } from '../../store/forumStates/userForumPosts';
 
 function AddNewForumPostScreen({ navigation, route }) {
@@ -48,16 +48,19 @@ function AddNewForumPostScreen({ navigation, route }) {
   const [showSnackbarMessage, setShowSnackbarMessage] = useState(false);
   const video = useRef(null);
   const dispatch = useDispatch();
-  const tutorialData = route.params;
+  const forumData = route.params;
 
   useFocusEffect(
     useCallback(() => {
-      if (tutorialData) {
-        setInputTitle(tutorialData.title);
-        setSelectedForumType(tutorialData.type);
-        if (tutorialData.level) setSelectedType(tutorialData.level);
-        setInputDescription(tutorialData.description);
-        setSelectedMedia(tutorialData.media_urls);
+      if (forumData) {
+        setInputTitle(forumData.title);
+        setSelectedForumType(forumData.forum_type);
+        setInputDescription(forumData.description);
+        setSelectedMedia(forumData.media_urls);
+        if (forumData.forum_type === 'Market') {
+          setSelectedType(forumData.type);
+          setInputPrice(forumData.price);
+        }
       } else {
         setInputTitle('');
         setSelectedForumType('Discussions');
@@ -66,7 +69,7 @@ function AddNewForumPostScreen({ navigation, route }) {
         setSelectedMedia([]);
         setInputPrice('');
       }
-    }, [tutorialData])
+    }, [forumData])
   );
 
   function millisToMinutesAndSeconds(millis) {
@@ -101,57 +104,52 @@ function AddNewForumPostScreen({ navigation, route }) {
       });
   };
 
-  const displayMedia = (itemData) => {
-    console.log(itemData.item.uri);
-    return (
-      <View style={{ margin: 2, height: 100, width: 100 }}>
-        <Image
-          style={{
-            width: 100,
-            height: 100,
-            borderColor: colors.placeholderDefault,
-            borderWidth: 2,
-            borderRadius: 16,
-          }}
-          source={{ uri: itemData.item.uri }}
-        />
-        <Pressable
-          style={styles.removeVideoButton}
-          onPress={() => {
-            setSelectedMedia(
-              selectedMedia.filter((item) => item.assetId !== itemData.item.assetId)
-            );
-          }}
-        >
-          <AntDesign name="closecircle" size={24} color={colors.secondary500} />
-        </Pressable>
-        {itemData.item.duration && (
-          <View style={{ position: 'absolute', bottom: 2, right: 4 }}>
-            <Text style={{ color: colors.whiteDefault }}>
-              {millisToMinutesAndSeconds(itemData.item.duration)}
-            </Text>
-          </View>
-        )}
-      </View>
-    );
-  };
+  const displayMedia = (itemData) => (
+    <View style={{ margin: 2, height: 100, width: 100 }}>
+      <Image
+        style={{
+          width: 100,
+          height: 100,
+          borderColor: colors.placeholderDefault,
+          borderWidth: 2,
+          borderRadius: 16,
+        }}
+        source={{ uri: itemData.item.uri }}
+      />
+      <Pressable
+        style={styles.removeVideoButton}
+        onPress={() => {
+          setSelectedMedia(selectedMedia.filter((item) => item.assetId !== itemData.item.assetId));
+        }}
+      >
+        <AntDesign name="closecircle" size={24} color={colors.secondary500} />
+      </Pressable>
+      {itemData.item.duration && (
+        <View style={{ position: 'absolute', bottom: 2, right: 4 }}>
+          <Text style={{ color: colors.whiteDefault }}>
+            {millisToMinutesAndSeconds(itemData.item.duration)}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
 
   const saveAndPublish = async () => {
-    if (inputTitle !== '' && inputDescription !== '' && selectedMedia) {
-      setUploading(true);
-
-      const promises = [];
+    if (inputTitle !== '' && inputDescription !== '') {
       const urls = [];
-      selectedMedia.forEach((file) => {
-        const videoUrl = uploadMedia(mediaConstants.forums, file.uri, {
-          customMetadata: { duration: file.duration },
-        }).then((result) => urls.push(result));
-        promises.push(videoUrl);
-      });
+      if (selectedMedia) {
+        setUploading(true);
 
-      await Promise.all(promises);
-      console.log(promises);
-      console.log(urls);
+        const promises = [];
+        selectedMedia.forEach((file) => {
+          const videoUrl = uploadMedia(mediaConstants.forums, file.uri, {
+            customMetadata: { duration: file.duration },
+          }).then((result) => urls.push(result));
+          promises.push(videoUrl);
+        });
+
+        await Promise.all(promises);
+      }
 
       const data = {
         createdBy: (await getCurrentUser()).uid,
@@ -167,7 +165,7 @@ function AddNewForumPostScreen({ navigation, route }) {
       const forumUrl =
         selectedForumType === 'Discussions'
           ? await addDiscussionsPost(data)
-          : await addBuildTutorial(data);
+          : await addMarketPost(data);
       const forumId = forumUrl.toString().split('/').pop();
       await addForumPostToCurrentUser(forumId, selectedForumType);
       setUploading(false);
@@ -178,30 +176,32 @@ function AddNewForumPostScreen({ navigation, route }) {
     }
   };
 
-  // async function saveChanges() {
-  //   if (inputTitle !== '' && inputDescription !== '' && selectedVideo) {
-  //     setUploading(true);
-  //     let videoUrl = selectedVideo.uri;
-  //     if (tutorialData.video_url !== selectedVideo.uri) {
-  //       await deleteMedia(mediaConstants.tutorials, tutorialData.video_url);
-  //       videoUrl = await uploadMedia(mediaConstants.tutorials, selectedVideo.uri);
-  //     }
-  //     tutorialData.title = inputTitle;
-  //     tutorialData.description = inputDescription;
-  //     if (tutorialData.level) tutorialData.level = selectedLevel;
-  //     tutorialData.video_url = videoUrl;
-  //     const tutorialId = tutorialData.id;
-  //     ['id', 'userTutorialId'].forEach((e) => delete tutorialData[e]);
-  //     await updateTutorial(selectedType, tutorialId, tutorialData);
-  //
-  //     setUploading(false);
-  //     dispatch(setTutorialDisplayData({ displayTutorials: [] }));
-  //     dispatch(setRefreshData({ refreshData: true }));
-  //     navigation.navigate('CreatorsSpace');
-  //   } else {
-  //     Alert.alert('Missing fields', 'Please try fill out all the fields and add a video!');
-  //   }
-  // }
+  async function saveChanges() {
+    setUploading(true);
+    if (forumData.video_url !== '' && forumData.video_url) {
+      // let videoUrl = selectedVideo.uri;
+      // if (forumData.video_url !== selectedVideo.uri) {
+      await deleteMedia(mediaConstants.tutorials, forumData.video_url);
+      // videoUrl = await uploadMedia(mediaConstants.tutorials, selectedVideo.uri);
+    }
+    const newCopy = _.cloneDeep(forumData);
+    newCopy.title = inputTitle;
+    newCopy.description = inputDescription;
+    // if (forumData.level) forumData.level = selectedLevel;
+    // forumData.video_url = videoUrl;
+    const forumId = newCopy.id;
+    // Remove fields that should not be updated
+    ['id', 'userTutorialId'].forEach((e) => delete newCopy[e]);
+    await updateForumPost(selectedForumType, forumId, newCopy);
+
+    setUploading(false);
+    dispatch(setTutorialDisplayData({ displayTutorials: [] }));
+    dispatch(setRefreshPostData({ refreshPostData: true }));
+    navigation.navigate('CreatorsSpace');
+    // } else {
+    //   Alert.alert('Missing fields', 'Please try fill out all the fields and add a video!');
+    // }
+  }
 
   if (uploading) {
     return <Spinner deps={[uploading]} />;
@@ -246,7 +246,7 @@ function AddNewForumPostScreen({ navigation, route }) {
         </View>
 
         {/* Forum Post Type selection section */}
-        {!tutorialData && (
+        {!forumData && (
           <View style={styles.inputContainer}>
             <Text style={styles.buttonText}>Select Forum Section</Text>
             <View style={styles.buttonsContainer}>
@@ -324,9 +324,11 @@ function AddNewForumPostScreen({ navigation, route }) {
               placeholderTextColor={colors.placeholderDefault}
               style={styles.input}
               value={inputPrice}
-              maxLength={50}
+              maxLength={6}
+              keyboardType="numeric"
               onChangeText={(enteredValue) => {
-                setInputPrice(enteredValue);
+                const text = enteredValue.replace(/[^0-9]/g, '');
+                setInputPrice(text);
               }}
             />
           </View>
@@ -351,16 +353,16 @@ function AddNewForumPostScreen({ navigation, route }) {
         {/* Tutorial Add Video section */}
         <View style={styles.addVideoContainer}>
           <PrimaryButton
-            buttonTitle={tutorialData ? 'Change Video' : 'Add Files'}
+            buttonTitle={forumData ? 'Change Video' : 'Add Files'}
             style={
-              !tutorialData && selectedMedia.length >= 5
+              !forumData && selectedMedia.length >= 5
                 ? { backgroundColor: colors.placeholderDefault }
                 : { backgroundColor: colors.secondary500 }
             }
             rippleColor={colors.secondary400}
             outerContainerStyle={{ width: '90%' }}
             onPress={selectMedia}
-            disabled={!tutorialData && selectedMedia.length >= 5}
+            disabled={!forumData && selectedMedia.length >= 5}
           />
           <FlatList
             data={selectedMedia}
@@ -389,7 +391,7 @@ function AddNewForumPostScreen({ navigation, route }) {
         <View style={{ flex: 1, justifyContent: 'flex-end' }}>
           <View style={styles.buttonsContainer}>
             <TabButton
-              buttonTitle={tutorialData ? 'Save Changes' : 'Save & Publish'}
+              buttonTitle={forumData ? 'Save Changes' : 'Save & Publish'}
               rippleColor={colors.secondary400}
               style={{
                 backgroundColor: colors.secondary500,
@@ -398,8 +400,7 @@ function AddNewForumPostScreen({ navigation, route }) {
                 height: 60,
               }}
               selectedContainerStyle={styles.selectedTutorialType}
-              // onPress={tutorialData ? saveChanges : saveAndPublish}
-              onPress={saveAndPublish}
+              onPress={forumData ? saveChanges : saveAndPublish}
             />
           </View>
         </View>

@@ -185,6 +185,14 @@ function DrawerNavigator() {
           // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
         }}
       />
+      <Drawer.Screen
+        name="EditForumPost"
+        component={AddNewForumPostScreen}
+        options={{
+          title: 'Edit Forum Post',
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
     </Drawer.Navigator>
   );
 }
@@ -288,6 +296,7 @@ function Root() {
       }
       setIsTryingLogIn(false);
     }
+
     fetchToken();
   }, [dispatch]);
 
@@ -297,6 +306,7 @@ function Root() {
 
   return <Navigation />;
 }
+
 export default function App() {
   return (
     <>
