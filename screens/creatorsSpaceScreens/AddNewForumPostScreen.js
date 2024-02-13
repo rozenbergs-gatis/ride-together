@@ -134,6 +134,7 @@ function AddNewForumPostScreen({ navigation, route }) {
     </View>
   );
 
+  // TODO add validation for inputPrice and manage attachments (pictures, videos)
   const saveAndPublish = async () => {
     if (inputTitle !== '' && inputDescription !== '') {
       const urls = [];
@@ -176,6 +177,7 @@ function AddNewForumPostScreen({ navigation, route }) {
     }
   };
 
+  // TODO add validation for updated fields and manage attachments (pictures, videos)
   async function saveChanges() {
     setUploading(true);
     if (forumData.video_url !== '' && forumData.video_url) {

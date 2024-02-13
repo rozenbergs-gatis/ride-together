@@ -43,16 +43,12 @@ export async function addMarketPost(data) {
       media_urls: data.mediaUrls,
     };
     if (data.price) payload.price = data.price;
-    console.log(payload);
     return push(ref(database, 'market_forum_posts/'), payload);
   }
   return false;
 }
 
 export async function updateForumPost(type, id, data) {
-  console.log(type);
-  console.log(id);
-  console.log(data);
   await update(ref(database, `${type.toLowerCase()}_forum_posts/${id}`), data);
 }
 
