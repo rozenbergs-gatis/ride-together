@@ -5,6 +5,7 @@ import userTutorialReducer from './tutorialStates/userTutorials';
 import globalTutorialReducer from './tutorialStates/globalTutorials';
 import userFavoriteTutorialsReducer from './tutorialStates/userFavoriteTutorials';
 import userForumPostsReducer from './forumStates/userForumPosts';
+import globalPostsReducer from './forumStates/globalPosts';
 
 const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ const store = configureStore({
     globalTutorials: globalTutorialReducer,
     userFavoriteTutorials: userFavoriteTutorialsReducer,
     userForumPosts: userForumPostsReducer,
+    globalPosts: globalPostsReducer,
   },
 });
 

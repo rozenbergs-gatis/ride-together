@@ -22,6 +22,8 @@ import Spinner from './components/Spinner';
 import TutorialsScreen from './screens/tutorialsScreens/TutorialsScreen';
 import TutorialDetailsScreen from './screens/tutorialsScreens/TutorialDetailsScreen';
 import AddNewForumPostScreen from './screens/creatorsSpaceScreens/AddNewForumPostScreen';
+import ForumScreen from './screens/forumScreens/ForumScreen';
+import FullScreenMediaOverlay from './screens/FullScreenMediaOverlay';
 
 // AppRegistry.registerComponent('main', () => App);
 const Stack = createNativeStackNavigator();
@@ -107,6 +109,7 @@ function DrawerNavigator() {
         drawerActiveTintColor: colors.secondary500,
         headerRight: myProfileButton,
       }}
+      backBehavior="history"
     >
       <Drawer.Screen
         name="Home"
@@ -143,7 +146,7 @@ function DrawerNavigator() {
       />
       <Drawer.Screen
         name="Forum"
-        component={HomeScreen}
+        component={ForumScreen}
         options={{
           title: 'Forum',
           // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
@@ -190,6 +193,14 @@ function DrawerNavigator() {
         component={AddNewForumPostScreen}
         options={{
           title: 'Edit Forum Post',
+          drawerItemStyle: { display: 'none' },
+        }}
+      />
+      <Drawer.Screen
+        name="FullScreenMediaOverlay"
+        component={FullScreenMediaOverlay}
+        options={{
+          headerShown: false,
           drawerItemStyle: { display: 'none' },
         }}
       />
