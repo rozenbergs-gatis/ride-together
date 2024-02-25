@@ -72,7 +72,7 @@ function AddNewTutorialScreen({ navigation, route }) {
       setUploading(true);
       const videoUrl = await uploadMedia(mediaConstants.tutorials, selectedVideo.uri);
       const data = {
-        createdBy: (await getCurrentUser()).uid,
+        createdBy: (await getCurrentUser()).displayName,
         title: inputTitle,
         type: selectedType,
         description: inputDescription,

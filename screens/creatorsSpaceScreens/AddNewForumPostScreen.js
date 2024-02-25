@@ -153,7 +153,7 @@ function AddNewForumPostScreen({ navigation, route }) {
       }
 
       const data = {
-        createdBy: (await getCurrentUser()).uid,
+        createdBy: (await getCurrentUser()).displayName,
         title: inputTitle,
         description: inputDescription,
         mediaUrls: urls,

@@ -39,7 +39,10 @@ export async function getAllUserForumPostsByType(user, type) {
 }
 
 export async function getUserUsername(userId) {
-  return get(ref(database, `users/${userId}/username`)).then((snapshot) => snapshot.val());
+  return get(ref(database, `users/${userId}/username`)).then((snapshot) => {
+    console.log(snapshot.val());
+    return snapshot.val();
+  });
 }
 
 export async function deleteUserTutorial(user, type, tutorialId) {
