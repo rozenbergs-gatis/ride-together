@@ -173,7 +173,7 @@ function AddNewForumPostScreen({ navigation, route }) {
       dispatch(setRefreshPostData({ refreshPostData: true }));
       navigation.navigate('CreatorsSpace');
     } else {
-      Alert.alert('Missing fields', 'Please fill out all the fields and add a video!');
+      Alert.alert('Missing fields', 'Please fill out all the fields!');
     }
   };
 
