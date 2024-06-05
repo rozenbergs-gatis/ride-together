@@ -7,6 +7,7 @@ import { Dropdown } from 'react-native-element-dropdown';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { FAB } from 'react-native-paper';
 import LoginScreen from './screens/authScreens/LoginScreen';
 import RegisterScreen from './screens/authScreens/RegisterScreen';
 import store from './store/store';
@@ -24,6 +25,9 @@ import TutorialDetailsScreen from './screens/tutorialsScreens/TutorialDetailsScr
 import AddNewForumPostScreen from './screens/creatorsSpaceScreens/AddNewForumPostScreen';
 import ForumScreen from './screens/forumScreens/ForumScreen';
 import FullScreenMediaOverlay from './screens/FullScreenMediaOverlay';
+import ChatsScreen from './screens/chatScreens/ChatsScreen';
+import MyFriendsScreen from './screens/myFriendsScreens/MyFriendsScreen';
+import AddNewFriendScreen from './screens/myFriendsScreens/AddNewFriendScreen';
 
 // AppRegistry.registerComponent('main', () => App);
 const Stack = createNativeStackNavigator();
@@ -49,6 +53,9 @@ function DrawerNavigator() {
           switch (item.label) {
             case 'My Profile':
               console.log(await getCurrentUser());
+              break;
+            case 'Friends':
+              navigation.navigate('MyFriends');
               break;
             case 'Creators Space':
               navigation.navigate('CreatorsSpace');
@@ -95,116 +102,154 @@ function DrawerNavigator() {
   }
 
   return (
-    <Drawer.Navigator
-      screenOptions={{
-        headerTitleAlign: 'center',
-        headerTintColor: colors.secondary500,
-        headerStyle: {
-          backgroundColor: colors.primary400,
-        },
-        headerTitleStyle: {
-          color: 'white',
-          fontSize: 28,
-        },
-        drawerActiveTintColor: colors.secondary500,
-        headerRight: myProfileButton,
-      }}
-      backBehavior="history"
-    >
-      <Drawer.Screen
-        name="Home"
-        component={HomeScreen}
-        options={{
-          title: 'Home',
-          headerTitle: 'Ride Together',
-          // drawerIcon: ({color, size}) => <Ionicons name={'list'} color={color} size={size}/>
+    <>
+      <Drawer.Navigator
+        screenOptions={{
+          headerTitleAlign: 'center',
+          headerTintColor: colors.secondary500,
+          headerStyle: {
+            backgroundColor: colors.primary400,
+          },
+          headerTitleStyle: {
+            color: 'white',
+            fontSize: 28,
+          },
+          drawerActiveTintColor: colors.secondary500,
+          headerRight: myProfileButton,
         }}
-      />
-      <Drawer.Screen
-        name="Skateparks"
-        component={SkateparksScreen}
-        options={{
-          title: 'Skateparks',
-          // drawerIcon: ({color, size}) => <Ionicons name={'list'} color={color} size={size}/>
+        backBehavior="history"
+      >
+        <Drawer.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            title: 'Home',
+            headerTitle: 'Ride Together',
+            // drawerIcon: ({color, size}) => <Ionicons name={'list'} color={color} size={size}/>
+          }}
+        />
+        <Drawer.Screen
+          name="Skateparks"
+          component={SkateparksScreen}
+          options={{
+            title: 'Skateparks',
+            // drawerIcon: ({color, size}) => <Ionicons name={'list'} color={color} size={size}/>
+          }}
+        />
+        <Drawer.Screen
+          name="Tutorials"
+          component={TutorialsScreen}
+          options={{
+            title: 'Tutorials',
+            // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+          }}
+        />
+        <Drawer.Screen
+          name="News"
+          component={HomeScreen}
+          options={{
+            title: 'News',
+            // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+          }}
+        />
+        <Drawer.Screen
+          name="Forum"
+          component={ForumScreen}
+          options={{
+            title: 'Forum',
+            // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+          }}
+        />
+        <Drawer.Screen
+          name="CreatorsSpace"
+          component={CreatorsSpaceScreen}
+          options={{
+            title: 'Creators Space',
+            drawerItemStyle: { display: 'none' },
+            // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+          }}
+        />
+        <Drawer.Screen
+          name="AddNewTutorial"
+          component={AddNewTutorialScreen}
+          options={{
+            title: 'Add New Tutorial',
+            drawerItemStyle: { display: 'none' },
+            // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+          }}
+        />
+        <Drawer.Screen
+          name="EditTutorial"
+          component={AddNewTutorialScreen}
+          options={{
+            title: 'Edit Tutorial',
+            drawerItemStyle: { display: 'none' },
+            // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+          }}
+        />
+        <Drawer.Screen
+          name="AddNewForumPost"
+          component={AddNewForumPostScreen}
+          options={{
+            title: 'Add New Post',
+            drawerItemStyle: { display: 'none' },
+            // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
+          }}
+        />
+        <Drawer.Screen
+          name="EditForumPost"
+          component={AddNewForumPostScreen}
+          options={{
+            title: 'Edit Forum Post',
+            drawerItemStyle: { display: 'none' },
+          }}
+        />
+        <Drawer.Screen
+          name="FullScreenMediaOverlay"
+          component={FullScreenMediaOverlay}
+          options={{
+            headerShown: false,
+            drawerItemStyle: { display: 'none' },
+          }}
+        />
+        <Drawer.Screen
+          name="Chats"
+          component={ChatsScreen}
+          options={{
+            title: 'Chats',
+            drawerItemStyle: { display: 'none' },
+          }}
+        />
+        <Drawer.Screen
+          name="MyFriends"
+          component={MyFriendsScreen}
+          options={{
+            title: 'My Friends',
+            drawerItemStyle: { display: 'none' },
+          }}
+        />
+        <Drawer.Screen
+          name="AddNewFriend"
+          component={AddNewFriendScreen}
+          options={{
+            title: 'Add New Friend',
+            drawerItemStyle: { display: 'none' },
+          }}
+        />
+      </Drawer.Navigator>
+      <FAB
+        icon="chat"
+        color="orange"
+        style={{
+          position: 'absolute',
+          margin: 16,
+          right: 0,
+          bottom: 0,
+          backgroundColor: colors.primary700,
         }}
+        onPress={() => navigation.navigate('Chats')}
       />
-      <Drawer.Screen
-        name="Tutorials"
-        component={TutorialsScreen}
-        options={{
-          title: 'Tutorials',
-          // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
-        }}
-      />
-      <Drawer.Screen
-        name="News"
-        component={HomeScreen}
-        options={{
-          title: 'News',
-          // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
-        }}
-      />
-      <Drawer.Screen
-        name="Forum"
-        component={ForumScreen}
-        options={{
-          title: 'Forum',
-          // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
-        }}
-      />
-      <Drawer.Screen
-        name="CreatorsSpace"
-        component={CreatorsSpaceScreen}
-        options={{
-          title: 'Creators Space',
-          drawerItemStyle: { display: 'none' },
-          // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
-        }}
-      />
-      <Drawer.Screen
-        name="AddNewTutorial"
-        component={AddNewTutorialScreen}
-        options={{
-          title: 'Add New Tutorial',
-          drawerItemStyle: { display: 'none' },
-          // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
-        }}
-      />
-      <Drawer.Screen
-        name="EditTutorial"
-        component={AddNewTutorialScreen}
-        options={{
-          title: 'Edit Tutorial',
-          drawerItemStyle: { display: 'none' },
-          // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
-        }}
-      />
-      <Drawer.Screen
-        name="AddNewForumPost"
-        component={AddNewForumPostScreen}
-        options={{
-          title: 'Add New Post',
-          drawerItemStyle: { display: 'none' },
-          // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
-        }}
-      />
-      <Drawer.Screen
-        name="EditForumPost"
-        component={AddNewForumPostScreen}
-        options={{
-          title: 'Edit Forum Post',
-          drawerItemStyle: { display: 'none' },
-        }}
-      />
-      <Drawer.Screen
-        name="FullScreenMediaOverlay"
-        component={FullScreenMediaOverlay}
-        options={{
-          headerShown: false,
-          drawerItemStyle: { display: 'none' },
-        }}
-      />
-    </Drawer.Navigator>
+    </>
   );
 }
 
