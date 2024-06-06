@@ -1,0 +1,30 @@
+[
+  {
+    "news_id": 1,
+    "title": "Kuldīgas skatepark contest",
+    "type": "Contest",
+    "timestamp": "1717255073000",
+    "content": "The following contest is going to happen in Kuldīga \nLocation: Skatepark of Kuldīga \nAt: Aug 12, 14:00 "
+  },
+  {
+    "news_id": 2,
+    "title": "New BMX frames for 2024",
+    "type": "Part",
+    "timestamp": "1717341473000",
+    "content": "For this brand there will be a new frame. In 2024 we are expecting that also new BMX parts will come for this brand also!"
+  },
+  {
+    "news_id": 3,
+    "title": "Ventspils skatepark contest",
+    "type": "Contest",
+    "timestamp": "1717255073000",
+    "content": "The following contest is going to happen in Ventspils \nLocation: Skatepark of Ventspils \nAt: Aug 13, 13:00 "
+  },
+  {
+    "news_id": 4,
+    "title": "Liepāja skatepark contest",
+    "type": "Contest",
+    "timestamp": "1717255073000",
+    "content": "The following contest is going to happen in Liepāja \nLocation: Skatepark of Liepāja \nAt: Aug 14, 15:00 "
+  }
+]

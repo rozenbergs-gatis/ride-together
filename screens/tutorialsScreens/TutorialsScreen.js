@@ -15,8 +15,8 @@ import {
 } from '../../utilities/tutorialController';
 import {
   setBuildTutorials,
-  setTrickTutorials,
   setRefreshData,
+  setTrickTutorials,
   setTutorialDisplayData,
 } from '../../store/tutorialStates/globalTutorials';
 import {
@@ -39,7 +39,9 @@ function TutorialsScreen({ navigation }) {
 
   const trickTutorials = useSelector((state) => state.globalTutorials.trickTutorials);
   const buildTutorials = useSelector((state) => state.globalTutorials.buildTutorials);
-  const displayTutorials = useSelector((state) => state.globalTutorials.displayTutorials);
+  const displayTutorials = useSelector((state) =>
+    [...state.globalTutorials.displayTutorials].sort((a, b) => b.timestamp - a.timestamp)
+  );
   const reloadData = useSelector((state) => state.globalTutorials.refreshData);
   const userFavoriteTutorials = useSelector((state) => state.userFavoriteTutorials.favoriteIds);
   const userTutorialsInProgress = useSelector(

@@ -8,6 +8,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import React, { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { FAB } from 'react-native-paper';
+import { LogBox } from 'react-native';
 import LoginScreen from './screens/authScreens/LoginScreen';
 import RegisterScreen from './screens/authScreens/RegisterScreen';
 import store from './store/store';
@@ -28,6 +29,11 @@ import FullScreenMediaOverlay from './screens/FullScreenMediaOverlay';
 import ChatsScreen from './screens/chatScreens/ChatsScreen';
 import MyFriendsScreen from './screens/myFriendsScreens/MyFriendsScreen';
 import AddNewFriendScreen from './screens/myFriendsScreens/AddNewFriendScreen';
+import NewsScreen from './screens/news/NewsScreen';
+import MyProfile from './screens/MyProfile';
+
+LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+LogBox.ignoreAllLogs(); // Ignore all log notifications
 
 // AppRegistry.registerComponent('main', () => App);
 const Stack = createNativeStackNavigator();
@@ -43,8 +49,8 @@ function DrawerNavigator() {
         data={[
           { label: 'My Profile', value: 1 },
           { label: 'Friends', value: 1 },
+          { label: 'Notifications', value: 1 },
           { label: 'Creators Space', value: 1 },
-          { label: 'My Media', value: 1 },
           { label: 'Logout', value: 1 },
         ]}
         labelField="label"
@@ -53,6 +59,7 @@ function DrawerNavigator() {
           switch (item.label) {
             case 'My Profile':
               console.log(await getCurrentUser());
+              navigation.navigate('MyProfile');
               break;
             case 'Friends':
               navigation.navigate('MyFriends');
@@ -146,7 +153,7 @@ function DrawerNavigator() {
         />
         <Drawer.Screen
           name="News"
-          component={HomeScreen}
+          component={NewsScreen}
           options={{
             title: 'News',
             // drawerIcon: ({color, size}) => <Ionicons name={'star'} color={color} size={size}/>
@@ -233,6 +240,14 @@ function DrawerNavigator() {
           component={AddNewFriendScreen}
           options={{
             title: 'Add New Friend',
+            drawerItemStyle: { display: 'none' },
+          }}
+        />
+        <Drawer.Screen
+          name="MyProfile"
+          component={MyProfile}
+          options={{
+            title: 'My Profile',
             drawerItemStyle: { display: 'none' },
           }}
         />

@@ -32,18 +32,18 @@ function SkateparkDetailsScreen({ route }) {
         <View style={{ flex: 2 }}>
           <Text>{foundSkatepark.location_street}</Text>
         </View>
-        <Section hideButton>Rating</Section>
-        <View style={{ flex: 2 }}>
-          <Rating
-            showRating
-            startingValue={foundSkatepark.rating}
-            readonly
-            ratingTextColor="black"
-            style={{ paddingVertical: 10 }}
-            isDisabled
-            imageSize={50}
-          />
-        </View>
+        {/* <Section hideButton>Rating</Section> */}
+        {/* <View style={{ flex: 2 }}> */}
+        {/*  <Rating */}
+        {/*    showRating */}
+        {/*    startingValue={foundSkatepark.rating} */}
+        {/*    readonly */}
+        {/*    ratingTextColor="black" */}
+        {/*    style={{ paddingVertical: 10 }} */}
+        {/*    isDisabled */}
+        {/*    imageSize={50} */}
+        {/*  /> */}
+        {/* </View> */}
         {/* <Text>{foundSkatepark.name}</Text> */}
       </ScrollView>
     </View>

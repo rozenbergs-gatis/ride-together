@@ -1,6 +1,7 @@
 import { get, push, ref, remove, update } from 'firebase/database';
 import { database } from '../firebase/firebaseConfig';
 import { getCurrentUser } from './authController';
+import { getUserUsername } from './userController';
 
 export async function getForumPost(ids, type) {
   return get(ref(database, `${type}_forum_posts/${ids.id}`)).then((snapshot) => ({
@@ -10,9 +11,10 @@ export async function getForumPost(ids, type) {
 }
 
 export async function getAllForumPosts(type) {
-  return get(ref(database, `${type.toLowerCase()}_forum_posts/`)).then((snapshot) =>
-    Object.entries(snapshot.val()).map(([id, obj]) => ({ id, ...obj }))
-  );
+  return get(ref(database, `${type.toLowerCase()}_forum_posts/`)).then(async (snapshot) => {
+    const currentUsername = await getUserUsername(Object.values(snapshot.val())[0].created_by);
+    return Object.entries(snapshot.val()).map(([id, obj]) => ({ id, ...obj, currentUsername }));
+  });
 }
 
 export async function addDiscussionsPost(data) {
