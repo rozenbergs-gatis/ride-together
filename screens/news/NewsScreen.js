@@ -6,210 +6,101 @@ import { Ionicons } from '@expo/vector-icons';
 import Swiper from 'react-native-swiper';
 import TabButton from '../../components/creatorsSpace/TabButton';
 import colors from '../../constants/colors';
-import { forumConstants } from '../../constants/types';
-import Spinner from '../../components/Spinner';
-import {
-  setDiscussionPosts,
-  setDisplayPosts,
-  setMarketPosts,
-  setRefreshData,
-} from '../../store/forumStates/globalPosts';
 import { getAllForumPosts } from '../../utilities/forumController';
+import SmallButton from '../../components/SmallButton';
+import { setTutorialDisplayData } from '../../store/tutorialStates/globalTutorials';
+import * as news from '../../data/news.json';
 
 function NewsScreen({ navigation }) {
-  const [screenLoading, setScreenLoading] = useState(true);
-  const [discussionsActive, setDiscussionsActive] = useState(true);
-  const [marketActive, setMarketActive] = useState(false);
+  const [contestsActive, setContestsActive] = useState(false);
+  const [partsActive, setpartsActiveActive] = useState(false);
   const [searchInput, setSearchInput] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('All');
 
-  const discussionPosts = useSelector((state) => state.globalPosts.discussionPosts);
-  const marketPosts = useSelector((state) => state.globalPosts.marketPosts);
-  const displayPosts = useSelector((state) => state.globalPosts.displayPosts);
-  const reloadData = useSelector((state) => state.globalPosts.refreshData);
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    async function fetchForumPosts(type) {
-      setDiscussionsActive(true);
-      setMarketActive(false);
-      await getAllForumPosts(type)
-        .then((posts) => {
-          if (type === forumConstants.discussions) {
-            dispatch(setDiscussionPosts({ discussionPosts: posts }));
-            dispatch(setDisplayPosts({ displayPosts: posts }));
-          } else {
-            dispatch(setMarketPosts({ marketPosts: posts }));
-          }
-        })
-        .catch(() => {
-          Alert.alert('Unable to fetch data', 'Please try again later');
-        });
-      setScreenLoading(false);
-      dispatch(setRefreshData({ refreshData: false }));
-    }
-
-    fetchForumPosts(forumConstants.discussions);
-    fetchForumPosts(forumConstants.market);
-  }, [dispatch, reloadData]);
-
-  const firstUpdate = useRef(true);
-  useLayoutEffect(() => {
-    if (firstUpdate.current) {
-      firstUpdate.current = false;
-      return;
-    }
-
-    const searchDelay = setTimeout(() => {
-      if (discussionsActive) {
-        if (!discussionPosts?.length) return;
-
-        const filteredData = discussionPosts.filter((post) =>
-          post.title.toLowerCase().includes(searchInput.toLowerCase())
-        );
-        setSearchInput(searchInput);
-        dispatch(setDisplayPosts({ displayPosts: filteredData }));
-      } else {
-        if (!marketPosts?.length) return;
-
-        const filteredData = marketPosts.filter((post) =>
-          post.title.toLowerCase().includes(searchInput.toLowerCase())
-        );
-        setSearchInput(searchInput);
-        dispatch(setDisplayPosts({ displayPosts: filteredData }));
+  const newsItems = (itemData) => (
+    <View
+      style={
+        itemData.item.media_urls
+          ? styles.forumItemContainer
+          : { ...styles.forumItemContainer, ...{ height: 230 } }
       }
-    }, 1000);
+    >
+      {/* Tutorial item title view */}
+      <View
+        style={{
+          marginLeft: 8,
+          flexDirection: 'row',
+          height: 75,
+          justifyContent: 'space-evenly',
+          alignItems: 'center',
+        }}
+      >
+        <View style={{ flex: 5 }}>
+          <Text style={styles.newsHeaderText} numberOfLines={1}>
+            {itemData.item.title}
+          </Text>
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.timestampHeaderText}>
+            {new Date(+itemData.item.timestamp).toDateString()}
+          </Text>
+        </View>
+      </View>
 
-    // eslint-disable-next-line consistent-return
-    return () => clearTimeout(searchDelay);
-    // eslint-disable-next-line
-  }, [dispatch, searchInput]);
-
-  const postItems = (itemData) => {
-    if (screenLoading) {
-      return <Spinner deps={[]} />;
-    }
-
-    return (
+      {/* Forum item Description view */}
       <View
         style={
           itemData.item.media_urls
-            ? styles.forumItemContainer
-            : { ...styles.forumItemContainer, ...{ height: 230 } }
+            ? styles.descriptionContainerWithMedia
+            : styles.descriptionContainerWithoutMedia
         }
       >
-        {/* Tutorial item title view */}
-        <View style={{ marginLeft: 8, flexDirection: 'row' }}>
-          <Ionicons name="person-circle" size={36} color={colors.whiteDefault} />
-          <View style={{ marginLeft: 8, flexDirection: 'column' }}>
-            <Text style={styles.forumPostHeaderText} numberOfLines={1}>
-              {itemData.item.created_by}
-            </Text>
-            <Text style={styles.forumPostHeaderText} numberOfLines={1}>
-              {new Date(+itemData.item.timestamp).toDateString()}
-            </Text>
-          </View>
-        </View>
-
-        {/* Forum item Description view */}
-        <View
-          style={
-            itemData.item.media_urls
-              ? styles.descriptionContainerWithMedia
-              : styles.descriptionContainerWithoutMedia
-          }
-        >
-          <Text style={styles.forumTitle}>{itemData.item.title}</Text>
-          <Text style={styles.descriptionText} numberOfLines={2}>
-            {itemData.item.description}
-          </Text>
-        </View>
-
-        {/* Forum post item media preview */}
-        {itemData.item.media_urls && (
-          <View style={styles.videoContainer}>
-            <Swiper>
-              {itemData.item.media_urls.map((img) => (
-                <Pressable
-                  onPress={() => navigation.navigate('FullScreenMediaOverlay', { imageUrl: img })}
-                  key={
-                    img.match(
-                      /https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/ride-together-f8d4e\.appspot\.com\/o\/(?:tutorials|forums)%2F(.*)\.jpeg\?/
-                    )[1]
-                  }
-                >
-                  <View style={{ alignItems: 'center' }}>
-                    <Image style={styles.imageStyle} source={{ uri: img }} />
-                  </View>
-                </Pressable>
-              ))}
-            </Swiper>
-          </View>
-        )}
-
-        <View style={styles.contentContainer}>
-          <View style={styles.buttonsContainer}>
-            <TabButton
-              buttonTitle="See More"
-              onPress={() => {
-                console.log('See More pressed!');
-              }}
-              style={{
-                backgroundColor: colors.backDrop,
-                borderBottomLeftRadius: 16,
-                height: 50,
-              }}
-              textStyle={{
-                color: colors.secondary400,
-              }}
-              rippleColor={colors.secondary500}
-            />
-            <TabButton
-              buttonTitle="Comment"
-              rippleColor={colors.secondary500}
-              style={{
-                backgroundColor: colors.secondary400,
-                borderBottomRightRadius: 16,
-                height: 50,
-              }}
-              onPress={async () => {
-                console.log('Comment pressed!');
-              }}
-            />
-          </View>
-        </View>
-        {/* </Pressable> */}
+        <Text style={styles.descriptionText}>{itemData.item.content}</Text>
       </View>
-    );
-  };
 
+      {/* Forum post item media preview */}
+      {itemData.item.media_urls && (
+        <View style={styles.videoContainer}>
+          <Swiper>
+            {itemData.item.media_urls.map((img) => (
+              <Pressable
+                onPress={() => navigation.navigate('FullScreenMediaOverlay', { imageUrl: img })}
+                key={
+                  img.match(
+                    /https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/ride-together-f8d4e\.appspot\.com\/o\/(?:tutorials|forums)%2F(.*)\.jpeg\?/
+                  )[1]
+                }
+              >
+                <View style={{ alignItems: 'center' }}>
+                  <Image style={styles.imageStyle} source={{ uri: img }} />
+                </View>
+              </Pressable>
+            ))}
+          </Swiper>
+        </View>
+      )}
+
+      <View style={styles.contentContainer}>
+        <View style={styles.buttonsContainer}>
+          <TabButton
+            buttonTitle="See More"
+            rippleColor={colors.secondary500}
+            style={{
+              backgroundColor: colors.secondary400,
+              borderBottomRightRadius: 16,
+              height: 50,
+            }}
+            onPress={async () => {
+              console.log('Comment pressed!');
+            }}
+          />
+        </View>
+      </View>
+      {/* </Pressable> */}
+    </View>
+  );
   return (
     <View style={styles.root}>
-      {/* Top Tab buttons */}
-      <View style={styles.buttonsContainer}>
-        <TabButton
-          buttonTitle="Discussions"
-          style={{ backgroundColor: colors.secondary900 }}
-          rippleColor={colors.secondary850}
-          selectedContainerStyle={discussionsActive && styles.selectedButton}
-          onPress={() => {
-            setDiscussionsActive(true);
-            setMarketActive(false);
-            dispatch(setDisplayPosts({ displayPosts: discussionPosts }));
-          }}
-        />
-        <TabButton
-          buttonTitle="Market"
-          rippleColor={colors.secondary700}
-          style={{ backgroundColor: colors.secondary800 }}
-          selectedContainerStyle={marketActive && styles.selectedButton}
-          onPress={() => {
-            setDiscussionsActive(false);
-            setMarketActive(true);
-            dispatch(setDisplayPosts({ displayPosts: marketPosts }));
-          }}
-        />
-      </View>
-
       {/* Search trick tutorial view */}
       <View style={styles.searchContainer}>
         <TextInput
@@ -236,18 +127,60 @@ function NewsScreen({ navigation }) {
         />
       </View>
 
+      {/* Filter button view */}
+      <View style={styles.buttonsContainer}>
+        <SmallButton
+          buttonTitle="All"
+          rippleColor={colors.whiteDefault}
+          style={
+            selectedFilter === 'All'
+              ? { backgroundColor: colors.secondary500, height: 40 }
+              : { backgroundColor: colors.backDrop, height: 40 }
+          }
+          outerContainerStyle={{ width: '25%', height: 40 }}
+          buttonTextStyle={styles.cancelButtonText}
+          onPress={() => {}}
+        />
+        <SmallButton
+          buttonTitle="Contests"
+          rippleColor={colors.whiteDefault}
+          style={
+            selectedFilter === 'Favorite'
+              ? { backgroundColor: colors.secondary500, height: 40 }
+              : { backgroundColor: colors.backDrop, height: 40 }
+          }
+          outerContainerStyle={{ height: 40 }}
+          buttonTextStyle={styles.cancelButtonText}
+          onPress={() => {}}
+        />
+
+        <SmallButton
+          buttonTitle="Parts"
+          rippleColor={colors.whiteDefault}
+          style={
+            selectedFilter === 'In Progress'
+              ? { backgroundColor: colors.secondary500, height: 40 }
+              : { backgroundColor: colors.backDrop, height: 40 }
+          }
+          outerContainerStyle={{ height: 40 }}
+          buttonTextStyle={styles.cancelButtonText}
+          onPress={() => {}}
+        />
+      </View>
+
       {/* Trick tutorials list view */}
       <View style={{ flex: 1 }}>
-        <FlatList data={displayPosts} renderItem={postItems} keyExtractor={(item) => item.id} />
+        <FlatList
+          data={news.default}
+          renderItem={newsItems}
+          keyExtractor={(item) => item.news_id}
+        />
       </View>
-      {/* <Modal visible={modalVisible} onDismiss={hideModal}> */}
-      {/*  <Image style={styles.imageStyle} source={{ uri: pictureUrl }} /> */}
-      {/* </Modal> */}
     </View>
   );
 }
 
-export default ForumScreen;
+export default NewsScreen;
 
 const styles = StyleSheet.create({
   root: {
@@ -303,7 +236,11 @@ const styles = StyleSheet.create({
     width: '100%',
     padding: 4,
   },
-  forumPostHeaderText: {
+  newsHeaderText: {
+    fontSize: 22,
+    color: colors.whiteDefault,
+  },
+  timestampHeaderText: {
     fontSize: 14,
     color: colors.whiteDefault,
   },

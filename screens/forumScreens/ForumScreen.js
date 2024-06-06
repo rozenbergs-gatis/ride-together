@@ -24,7 +24,9 @@ function ForumScreen({ navigation }) {
 
   const discussionPosts = useSelector((state) => state.globalPosts.discussionPosts);
   const marketPosts = useSelector((state) => state.globalPosts.marketPosts);
-  const displayPosts = useSelector((state) => state.globalPosts.displayPosts);
+  const displayPosts = useSelector((state) =>
+    [...state.globalPosts.displayPosts].sort((a, b) => b.timestamp - a.timestamp)
+  );
   const reloadData = useSelector((state) => state.globalPosts.refreshData);
   const dispatch = useDispatch();
 
@@ -102,7 +104,7 @@ function ForumScreen({ navigation }) {
           <Ionicons name="person-circle" size={36} color={colors.whiteDefault} />
           <View style={{ marginLeft: 8, flexDirection: 'column' }}>
             <Text style={styles.forumPostHeaderText} numberOfLines={1}>
-              {itemData.item.created_by}
+              {itemData.item.currentUsername}
             </Text>
             <Text style={styles.forumPostHeaderText} numberOfLines={1}>
               {new Date(+itemData.item.timestamp).toDateString()}
